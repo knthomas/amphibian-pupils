@@ -3,7 +3,8 @@ title: "Tests for associations with pupil shape"
 author: "Katie Thomas"
 date: 05 August 2021
 output:
-  html_document:
+ html_document:
+    keep_md: true
     theme: flatly
     toc: yes
     toc_float: yes
@@ -49,10 +50,10 @@ library(phylolm)
 
 ```{r}
 #import cleaned data
-pupil.data <- data.frame(read.csv("../Cleaned data/pupil_data_cleaned.csv",header=TRUE, na.strings=c("NA")))
+pupil.data <- data.frame(read.csv("../Data/Cleaned data/pupil_data_refs.csv",header=TRUE, na.strings=c("NA")))
 
 #import cleaned tree
-pupil.tree <- read.nexus(file = "../Cleaned data/pupil_tree_cleaned")
+pupil.tree <- read.nexus(file = "../Data/Cleaned data/pupil_tree_cleaned")
 ```
 
 
