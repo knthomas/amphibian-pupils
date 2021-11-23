@@ -4,6 +4,7 @@ author: "Katie Thomas"
 date: 10 June 2021
 output:
   html_document:
+    keep_md: true
     code_fold: hide
     theme: flatly
     toc: yes
@@ -46,10 +47,10 @@ library(grImport)
 
 ```{r}
 #import cleaned data
-pupil.data <- data.frame(read.csv("../Cleaned data/pupil_data_cleaned.csv",header=TRUE, na.strings=c("NA")))
+pupil.data <- data.frame(read.csv("../Data/Cleaned data/pupil_data_refs.csv",header=TRUE, na.strings=c("NA")))
 
 #import cleaned tree
-pupil.tree <- read.nexus(file = "../Cleaned data/pupil_tree_cleaned")
+pupil.tree <- read.nexus(file = "../Data/Cleaned data/pupil_tree_cleaned")
 
 #ladderize tree
 pupil.tree <- ladderize(pupil.tree)
