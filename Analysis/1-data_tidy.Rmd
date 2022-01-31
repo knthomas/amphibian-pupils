@@ -1,7 +1,7 @@
 ---
 title: "Pupil data and phylogeny"
 author: "Katie Thomas"
-date: 22 June 2021
+date: 31 Jan 2022
 output:
   html_document:
     keep_md: true
@@ -68,7 +68,6 @@ pupils_adults <- pupils_adults_raw %>%
   filter(DROPS != "drop") %>%
   filter(genus_species != "eyes beneath bone_NA") %>% #remove non-eyed caecilians
   filter(genus_species != "eyes beneath bone?_NA") %>% #remove non-eyed caecilians
-  #select(genus_species, Order, Family, Genus, Species, Final_Constriction, Final_Shape, aquatic, fossorial, arboreal, diurnal) %>%
   select(genus_species, Order, Family, Genus, Species, Final_Constriction, Final_Shape, aquatic, fossorial, arboreal, diurnal, Source, Pupil_link, Pupil_link_2, AH_source, AP_source, references) %>%
 filter_at(vars(Final_Constriction, Final_Shape), any_vars(!is.na(.))) %>% #omit species missing both pupil constriction and shape data. 
   droplevels() 
@@ -211,27 +210,22 @@ We check whether the tree is rooted (it is) and whether it is reading as ultrame
 
 ```{r pryontree, fig.height=8, fig.width=8, echo = TRUE}
 
-#Import phylogeny from Jetz and Pyron 2019
-tree_orig <- read.tree(file = "../Data/Raw data/amph_shl_new_Consensus_7238.tre") #reads tree
+#Import ultrametric phylogeny (modified) from Jetz and Pyron 2019
+tree_orig <- read.tree(file = "../Data/Cleaned data/amph_tree_ultrametric") #reads tree
 
 #check whether tree is rooted
-is.rooted(tree_orig) #tests whether tree is rooted (want it to return "TRUE") 
-#check whether 
-is.binary(tree_orig) #tests whether tree is dichotomous (no polytomies)
+is.rooted(tree_orig) 
+
+#check whether tree is dichotomous (no polytomies)
+is.binary(tree_orig) 
 
 #check that tree is ultrametric
 is.ultrametric(tree_orig)
 
-#force tree ultrametric
-tree_orig <- force.ultrametric(tree_orig)
+#plot tree
+plot.phylo(tree_orig, show.tip.label = F)
 
-#check that tree is ultrametric
-is.ultrametric(tree_orig)
-
-#show tree
-plot.phylo(tree_orig, type = "fan", show.tip.label = FALSE)
 ```
-
 Next we must match up the species names in the tree to the species names in our dataset. Unfortunately, anuran taxonomy changes frequently and there are likely many species matches that are named differently in the tree and in our dataset. To match them up, we use the AmphiNom package by Liedtke (2019) to convert known synonyms to the taxonomy represented in Amphibian Speicies of the World (ASW). This addresses the bulk of missing taxa; the remaining need to be examined manually to match to the tree. 
 
 ```{r name-match, fig.height=20, fig.width=20, results = "hide"}
@@ -642,13 +636,13 @@ is.binary(tree.pruned)
 is.ultrametric(tree.pruned)
 
 #export as nexus file
-#write.nexus(tree.pruned, file = "poly_tree")
+write.nexus(tree.pruned, file = "../Outputs/poly_tree.nex")
 
 #plot pruned tree with polytomies
 plot.phylo(tree.pruned, type="fan")
 
 #export plot of tree
-pdf("../Outputs/poly_tree", width = 25, height = 25)
+pdf("../Outputs/poly_tree.pdf", width = 25, height = 25)
 plot.phylo(tree.pruned, 
            type = "fan", 
            show.tip.label = TRUE,
@@ -656,12 +650,24 @@ plot.phylo(tree.pruned,
 dev.off()
 ```
 
-All looks good. Next we resolve polytomies in the tree randomly using the bifurcr function in the PDcalc package. 
+All looks good. Next we resolve polytomies in the tree randomly using multi2di in the ape package. 
 
 ```{r, fig.height=12, fig.width=12}
 
+#Import ultrametric phylogeny (modified) from Jetz and Pyron 2019
+tree.pruned <- read.nexus("../Outputs/poly_tree.nex") #reads tree
+
+#plot tree
+plot.phylo(tree.pruned, type="fan", show.tip.label=FALSE)
+
+#check that tree is ultrametric
+is.ultrametric(tree.pruned)
+
+#randomly resolve polytomies with multi2di
+tree.pruned2 <- multi2di(tree.pruned, random = TRUE)
+
 #randomly resolve polytomies with PDcalc package
-tree.pruned2 <- PDcalc::bifurcatr(tree.pruned, runs = 1)
+#tree.pruned2 <- PDcalc::bifurcatr(tree.pruned, runs = 1)
 
 #confirm that tree is now dichotomous
 is.binary(tree.pruned2)
@@ -670,18 +676,18 @@ is.binary(tree.pruned2)
 is.ultrametric(tree.pruned2)
 
 #export as nexus file
-#write.nexus(tree.pruned2, file = "../Data/tidied data/dich_tree.nex")
+write.nexus(tree.pruned2, file = "../Outputs/dich_tree.nex")
 
 #re-import new tree
 #tree_new <- read.nexus(file = "../Data/tidied data/dich_tree.nex")
-tree_new <- tree.pruned2
+#tree_new <- tree.pruned2
 
 #plot raw tree
-plot.phylo(tree_new, type = "fan", show.tip.label = FALSE)
+plot.phylo(tree.pruned2, type = "fan", show.tip.label = FALSE)
 
 #export plot of tree
 pdf("../Outputs/dich_tree_nonultra", width = 25, height = 25)
-plot.phylo(tree_new, 
+plot.phylo(tree.pruned2, 
            type = "fan", 
            show.tip.label = TRUE,
            cex = .3) 
@@ -689,34 +695,13 @@ dev.off()
 
 ```
 
-This tree looks great, but it isn't returning TRUE for being ultrametric. It should be, and it does look ultrametric, so I'm fairly comfortable assuming that this is minor rounding issues (common) and will force it to be ultrametric. 
-
-```{r, fig.height=12, fig.width=12}
-
-#force dichotomous pruned tree to be ultrametric (it should be and looks so)
-tree_new2 <- force.ultrametric(tree_new)
-
-#check that tree is now ultrametric
-is.ultrametric(tree_new2)
-
-#plot tree
-plot.phylo(tree_new2, type = "fan", show.tip.label = FALSE)
-
-#export plot of tree
-pdf("../Outputs/dich_tree_ultra", width = 25, height = 25)
-plot.phylo(tree_new2, 
-           type = "fan", 
-           show.tip.label = TRUE,
-           cex = .3) 
-dev.off()
-```
 
 This final pruned, dichotomous, ultrametric tree is the structure we want, but the tip labels are still as in Jetz and Pyron (2019). We can plot the tree with those labels here. 
 
 ```{r, fig.height=12, fig.width=12}
 
 #plot this pruned, ultrametric tree with Jetz/Pyron tip labels
-plot.phylo(tree_new2, #phylogeny to plot
+plot.phylo(tree.pruned2, #phylogeny to plot
            type = "fan", #how to visualize phylogeny
            show.tip.label = TRUE, #whether to show tip labels/species names
            cex = 0.2, #text size
@@ -731,7 +716,7 @@ plot.phylo(tree_new2, #phylogeny to plot
 
 pdf("../Outputs/species_tree_jetzpyron.pdf", width = 12, height = 200)
 
-plot.phylo(tree_new2, #phylogeny to plot
+plot.phylo(tree.pruned2, #phylogeny to plot
            type = "phylogram", #how to visualize phylogeny
            show.tip.label = TRUE, #whether to show tip labels/species names
            cex = 1, #text size
@@ -746,7 +731,7 @@ Finally, we rename the tip labels on the tree to match the Frost (2021) Amphibia
 
 ```{r}
 #rename tree to alter
-pupil.tree <- tree_new2
+pupil.tree <- tree.pruned2
 
 #rename trait dataframe (to match prior analyses) 
 pupils.phy <- phylo_data %>%
