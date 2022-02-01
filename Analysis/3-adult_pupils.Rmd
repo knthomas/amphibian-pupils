@@ -68,7 +68,7 @@ pupil.data <- pupil.data[pupil.tree$tip.label, ]
 
 # Sampling
 
-We have collected adult pupil data from `r length(levels(as.factor(pupil.data$genus_species)))` species representing `r length(levels(as.factor(pupil.data$Genus)))` genera and `r length(levels(as.factor(pupil.data$Family)))` families. 
+We have collected adult pupil data from `r length(levels(as.factor(pupil.data$ASW_names)))` species representing `r length(levels(as.factor(pupil.data$Genus)))` genera and `r length(levels(as.factor(pupil.data$Family)))` families. 
 
 Sampling within family is uneven due to increased focus on families that seemed to exhibit more diversity in pupil shapes and constriction. 
 
@@ -100,15 +100,15 @@ Among the three amphibian orders, sampling is distributed as follows:
 
 **Gymnophiona**
 Families = `r length(levels(as.factor(gymno$Family)))`
-Species = `r length(levels(as.factor(gymno$genus_species)))`
+Species = `r length(levels(as.factor(gymno$ASW_names)))`
 
 **Caudata**
 Families = `r length(levels(as.factor(caudata$Family)))`
-Species = `r length(levels(as.factor(caudata$genus_species)))`
+Species = `r length(levels(as.factor(caudata$ASW_names)))`
 
 **Anura**
 Families = `r length(levels(as.factor(frogs$Family)))`
-Species = `r length(levels(as.factor(frogs$genus_species)))`
+Species = `r length(levels(as.factor(frogs$ASW_names)))`
 
 
 # Family-level diversity
@@ -215,7 +215,7 @@ sh_con_tad <- c("symmetrical" = "N")
 sh_shape_tad <- c("circle"  = 21)
 ```
 
-```{r phylo-fams, fig.height = 25, fig.width = 12, fig.cap = "Pupil phenotypes across anuran families"}
+```{r phylo-fams, fig.height = 25, fig.width = 12, fig.cap = "Pupil phenotypes across amphibian families"}
 #export as pdf: fan with tip labels ---------
 #pdf("../Outputs/Figures/family-fig.pdf", width = 12, height = 20)
 
@@ -446,7 +446,7 @@ dev.off()
 
 ## Pupil constriction among all adults sampled
 
-Here are all species coded for adult pupil constriction on a fan tree, with species names colored by the pupil constriction direction (vertical/horizontal/symmetrical). 
+Here are all species coded for adult pupil constriction on a fan tree, with species names colored by the pupil constriction direction (vertical/horizontal/non-elongated). 
 
 ```{r phylo-adults, fig.height = 15, fig.width = 15, fig.cap = "Pupil shape across anurans"}
 
@@ -799,11 +799,11 @@ Finally, we visualize our ancestral state estimation onto the tree, with nodes s
 plot(summary(ace.adults),colors=col_constrict, type="fan", ftype="off", cex = .2)
 
 #add legend for pupil constriction
-legend(x="topleft", legend = c("Horizontal", "Symmetrical", "Vertical"), 
+legend(x="topleft", legend = c("Horizontally elongated", "Non-elongated", "Vertically elongated"), 
        pt.bg = col_constrict,
        pch = 21, 
-       pt.cex = 2, 
-       cex = 2, 
+       pt.cex = 1, 
+       cex = 1, 
        box.lty = 0, 
        title = "Adult pupil constriction", 
        title.adj = 0)
@@ -883,7 +883,7 @@ plot(tree_painted,
 
 legend("bottomleft",
        col=col_constrict,
-       legend=names(col_constrict),
+       legend=c("horizontally elongated", "non-elongated", "vertically elongated"),
        pch=19)
 
 dev.off()
@@ -896,11 +896,12 @@ plot(tree_painted,
 
 legend("bottomleft",
        col=col_constrict,
-       legend=names(col_constrict),
+       legend=c("horizontally elongated", "non-elongated", "vertically elongated"),
        pch=19)
+
 ```
 
-We can also count how many transitions have likely occurred between each set of states. Here, I have just looked at the mean number of transitions across the 100 trees we ran, as well as the mean number from each state to each other state (again, across 100 trees).
+We can also count how many transitions have likely occurred between each set of states. Here, we look at the mean number of transitions across the 100 trees we ran, as well as the mean number from each state to each other state (again, across 100 trees).
 
 ```{r}
 #summary of ACE
