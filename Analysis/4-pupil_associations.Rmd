@@ -1,7 +1,7 @@
 ---
 title: "Tests for associations with pupil shape"
 author: "Katie Thomas"
-date: 05 August 2021
+date: 21 January 2022
 output:
  html_document:
     keep_md: true
@@ -122,7 +122,7 @@ pupils.eye <- pupils.eye[eye.tree$tip.label,]
 
 ## Visualize data
 
-Here, we plot adult pupil constriction  alongside binary ecological trait data for whether each species is arboreal, aquatic, fossorial, or diurnal. Species names are colored by pupil constriction and each binary trait is  colored as present (colored) or absent (gray). Missing trait data is left as white space.
+Here, we plot adult pupil constriction  alongside binary ecological trait data for whether each species is s, aquatic, fossorial, or diurnal. Species names are colored by pupil constriction and each binary trait is  colored as present (colored) or absent (gray). Missing trait data is left as white space.
 
 ```{r}
 # Designate color and shape vectors for plotting -----
@@ -133,9 +133,9 @@ col_constrict <- c("horizontal" = "#f768fc",
                    "vertical" = "#3abde2")
 
 #pupil constriction symbols
-sh_constrict <- c("horizontal" = 72,
-                  "symmetrical" = 83,
-                  "vertical" = 86)
+sh_constrict <- c("horizontal" = "H",
+                  "symmetrical" = "N",
+                  "vertical" = "V")
                    
 #pupil shape symbols
 sh_shape <- c("almond/slit" = 97,
@@ -204,7 +204,7 @@ tiplabels(col = col_diur[pupils.eco$diurnal],
           offset = 20) 
 
 #add legend for pupil constriction
-legend(x = 0.05, y = -20, legend = c("Horizontal", "Symmetrical", "Vertical"), 
+legend(x = 0.05, y = -20, legend = c("Horizontally elongated", "Non-elongated", "Vertically elongated"), 
        col = col_constrict,
        pch = 15,
        cex = 0.7, 
@@ -221,18 +221,15 @@ legend(x = 0.05, y = -50, legend = c("aquatic", "fossorial", "scansorial", "diur
        title = "Adult Ecology", 
        title.adj = 0)
 
-#finish pdf export without legends
-#dev.off()
-
 #finish pdf export
 #dev.off()
 ```
 
 ## Adult pupil shape and ecology
 
-We previously ran models of discrete correlated character evolution in BayesTraits to test for associations between pupil shape and ecology, but MCMC results did not converge properly and ML transition rates were difficult to interpret. Our new approach here is to use multivariate phylogenetic logistic regression using the R package phylolm. Specifically, we will examine the correlation structure of binary states for pupil shape, activity pattern, habitat and the interaction between activity pattern and habitat using the logistic_MPLE method, which maximizes the penalized likelihood of the logistic regression. 
+We use multivariate phylogenetic logistic regression using the R package phylolm to fit models of binary pupil shape vs. discrete categories for ecology. We use the logistic_MPLE method, which maximizes the penalized likelihood of the logistic regression.
 
-Our ecological data is already in binary format, with "yes" indicating the presence of an ecological trait of interest and "no" the absence. We also need to make pupil shape binary depending on the hypothesis we are testing. Specifically, we need one column for vertical pupil vs. nonvertical (horizontal or symmetrical) pupil, and one column for symmetrical pupil vs. nonsymmetrical (elongated horizontal or vertical) pupil. 
+Our ecological data is already in binary format, with "yes" indicating the presence of an ecological trait of interest and "no" the absence. We also need to make pupil shape binary depending on the hypothesis we are testing. Specifically, we need one column for vertical pupil vs. nonvertical (horizontal or symmetrical) pupil, and one column for symmetrical pupil vs. nonsymmetrical (elongated horizontal or vertical) pupil.
 
 ```{r}
 #convert traits to 0 and 1
@@ -245,59 +242,15 @@ pupils.binary <- pupils.eco %>%
   mutate(fossorial_bi = recode(fossorial, "yes" = 1, "no" = 0)) %>%
   mutate(arboreal_bi = recode(arboreal, "yes" = 1, "no" = 0)) %>%
   mutate(diurnal_bi = recode(diurnal, "yes" = 1, "no" = 0)) %>%
-  mutate(foss_aq_bi = if_else(fossorial=="yes"|aquatic=="yes", 1, 0))
+  mutate(foss_aq_bi = if_else(fossorial=="yes"|aquatic=="yes", 1, 0)) %>%
+  mutate(three_state_eco = case_when(fossorial=="yes"~"fossorial",
+                                     aquatic=="yes"~"aquatic",
+                                     fossorial=="no"&aquatic=="no"~"neither"))
 ```
 
-Now we can run the phylogenetic GLMs. I will subset these by the hypothesis that is being tested. So far, I have not included interaction terms, as the sample sizes for just the main hypotheses are often quite small already. We can add though as desired. 
+Now we can run the phylogenetic GLMs. We will subset these by the hypothesis that is being tested.
 
-## Are diurnal activity patterns correlated with symmetrical pupils?
-
-First we take a quick look at the distribution of all 4 combinations of these 2 binary traits. 
-
-```{r}
-
-#find counts for each combination of states
-counts_diurnal <- pupils.binary %>%
-  filter(!is.na(diurnal_bi)) %>%
-  mutate(dual_state = case_when(pupil_symm_bi==1 & diurnal_bi==1 ~ "symmmetrical & diurnal",
-                                pupil_symm_bi==0 & diurnal_bi==1 ~ "nonsymmetrical & diurnal",
-                                pupil_symm_bi==1 & diurnal_bi==0 ~ "symmmetrical & nondiurnal",
-                                pupil_symm_bi==0 & diurnal_bi==0 ~ "nonsymmetrical & nondiurnal"))
-
-#print table
-kable(count(counts_diurnal, dual_state))
-
-dicount <- count(counts_diurnal, dual_state) %>%
-  add_row(dual_state = "symmmetrical & diurnal", n = 0)
-
-
-#plot states
-plot_D <- ggplot(data=dicount, 
-                  aes(x=n, y=dual_state)) +
-  geom_bar(stat="identity")+
-  geom_text(aes(label=n), hjust=0)+
-  theme(text = element_text(size=14), panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.key = element_rect(fill = NA)) + #controls background +
-  xlab("Number of species") +
-  ylab("Pupil constriction and activity period")
-
-plot(plot_D)
-
-```
-Then we can run the model in phyloglm. 
-
-```{r}
-
-DiurnalGLM <- phyloglm(pupil_symm_bi ~ diurnal_bi, 
-                       data = pupils.binary, 
-                       phy = eco.tree, 
-                       method = "logistic_MPLE", 
-                       boot = 1000)
-summary(DiurnalGLM)
-plot(DiurnalGLM)
-```
-
-
-## Are scansorial habitats correlated with vertical pupils?
+## Are vertical pupils correlated with scansorial habitats?
 
 First we take a quick look at the distribution of all 4 combinations of these 2 binary traits. 
 
@@ -327,164 +280,126 @@ plot(plot_S)
 
 ```
 
-Then we can run the model in phyloglm. 
+Then we can run the model in phyloglm. For this model, pupil shape is binary (1 = vertical pupils, 0 = horizontal or non-elongated pupils) and scansoriality is binary (1 = scansorial, 0 = non-scansorial)
 
 ```{r}
-
+#fit model
 ScansGLM <- phyloglm(pupil_vert_bi ~ arboreal_bi, 
                        data = pupils.binary, 
                        phy = eco.tree, 
                        method = "logistic_MPLE", 
                        boot = 1000)
+#output
 summary(ScansGLM)
-plot(ScansGLM)
-```
-
-## Are fossorial and aquatic habitats correlated with symmetrical pupils?
-
-First we take a quick look at the distribution of all 4 combinations of these 2 binary traits. 
-
-```{r}
-
-#find counts for each combination of states
-counts_foss_aq <- pupils.binary %>%
-  filter(!is.na(foss_aq_bi)) %>%
-  mutate(dual_state = case_when(pupil_symm_bi==1 & foss_aq_bi==1 ~ "symmmetrical & fossorial/aquatic",
-                                pupil_symm_bi==0 & foss_aq_bi==1 ~ "nonsymmetrical &  fossorial/aquatic",
-                                pupil_symm_bi==1 & foss_aq_bi==0 ~ "symmmetrical & not fossorial/aquatic",
-                                pupil_symm_bi==0 & foss_aq_bi==0 ~ "nonsymmetrical & not fossorial/aquatic"))
-
-#print table
-kable(count(counts_foss_aq,dual_state))
-
-#plot states
-plot_FA <- ggplot(data=count(counts_foss_aq,dual_state), 
-                  aes(x=n, y=dual_state)) +
-  geom_bar(stat="identity")+
-  geom_text(aes(label=n), hjust=0)+
-  theme(text = element_text(size=14), panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.key = element_rect(fill = NA)) + #controls background +
-  xlab("Number of species") +
-  ylab("Pupil constriction and habitat")
-
-plot(plot_FA)
-
 ```
 
 
-For this model, fossorial and aquatic habitats are combined to increase power. 
-```{r}
+## Tests for correlates of non-elongated pupils
 
-FossAqGLM <- phyloglm(pupil_symm_bi ~ foss_aq_bi, 
-                       data = pupils.binary, 
-                       phy = eco.tree, 
-                       method = "logistic_MPLE", 
-                       boot = 1000)
-summary(FossAqGLM)
-plot(FossAqGLM)
-```
+We predicted that non-elongated (e.g. circular) pupils would show evolutionary associations with 1) aquatic habitats, 2) fossorial habits, and 3) diurnal activity periods. 
 
-It looks like there may be an association between pupil shape and fossorial/aquatic ecologies. We can also see if there is an additive or interaction effect with diurnality, as we also predicted that would be associated with symmetrical pupils.
+The below models have a binary, discrete category for pupil shape (the dependent variable; 1 = non-elongated pupil, 0 = elongated [horizontal or vertical] pupil). Covariates are 1) habitat, a discrete variable with 3 states (aquatic, fossorial, neither), and 2) activity period, a discrete variable with 2 states (1 = diurnal, 0 = non-diurnal)
 
-We can compare models of pupil ~ diurnal, pupil ~ foss/aq, and pupil ~ diurnal + foss/aq. However, for this we need to make sure the dataset is exactly the same for all three models we will compare. So we will drop NAs from the dataset first.  
+Here, we test three models of the evolution of binary pupil shape (non-elongated or elongated):
+
+1) pupil shape ~ habitat
+2) pupil shape ~ activity period
+3) pupil shape ~ habitat + activity period
+
+Preliminary fits for the second and third models listed prompted warning messages that ""the estimated coefficients in the absence of phylogenetic signal lead to some linear predictors beyond 'btol'." Thus, we increased btol (the bound on the linear predictor to bound the searching space) to 25 (default is btol = 10) for all three models. 
 
 ```{r}
+#control factor level order for eco states
+pupils.binary$three_state_eco <- factor(pupils.binary$three_state_eco, levels = c("neither", "fossorial", "aquatic"))
 
-#drop NAs for activity period or fossorial/aquatic from dataset
+#subset data to species with complete sampling for ecology and diurnality
 pupils.binary_habact <- pupils.binary %>%
-  filter(across(c(foss_aq_bi, diurnal_bi), ~ !is.na(.x)))
+  filter(across(c(three_state_eco, diurnal_bi), ~ !is.na(.x)))
 
-#run pupil ~ habitat
-HabGLM <- phyloglm(pupil_symm_bi ~ foss_aq_bi, 
-                       data = pupils.binary_habact, 
-                       phy = eco.tree, 
-                       method = "logistic_MPLE", 
-                       boot = 1000)
-summary(HabGLM)
-plot(HabGLM)
+#sample sizes for each combination of states
+samples <- pupils.binary_habact %>%
+  count(three_state_eco, diurnal_bi)
 
-#run pupil ~ activity period
-ActGLM <- phyloglm(pupil_symm_bi ~ diurnal_bi, 
-                       data = pupils.binary_habact, 
-                       phy = eco.tree, 
-                       method = "logistic_MPLE", 
-                       boot = 1000)
-summary(ActGLM)
-plot(ActGLM)
-
-#run pupil ~ habitat + activity period
-HabActGLM_add <- phyloglm(pupil_symm_bi ~ foss_aq_bi + diurnal_bi, 
-                       data = pupils.binary_habact, 
-                       phy = eco.tree, 
-                       method = "logistic_MPLE", 
-                       boot = 1000)
-summary(HabActGLM_add)
-plot(HabActGLM_add)
-
-#run pupil ~ habitat + activity period + habitat*activity period
-HabActGLM_int <- phyloglm(pupil_symm_bi ~ foss_aq_bi + diurnal_bi + foss_aq_bi*diurnal_bi, 
-                       data = pupils.binary_habact, 
-                       phy = eco.tree, 
-                       method = "logistic_MPLE", 
-                       boot = 1000)
-summary(HabActGLM_int)
-plot(HabActGLM_int)
-
-
-```
-
-From p-values alone in the interaction model, it looks like aquatic/fossoriality and diurnality both have effects on pupil shape, but there is no interaction (which makes sense, because I don't know if we even have any fossorial diurnal things, since we defined diurnal as active during the day above ground which would exclude fossorial diurnal things from the category. There might have been a couple aquatic diurnal things?). 
-
-From AIC, it looks like the additive model that includes aquatic/fossoriality and diurnality is the best at describing pupil shape as symmetrical or nonsymmetrical. 
-
-Just to take a quick look at sample sizes for these categories so we know what we have in this model:
-
-```{r}
-samples <- pupils.binary %>%
-  count(pupil_symm_bi, foss_aq_bi, diurnal_bi)
-
+#make scrolling table
 kable(samples, caption = "Number of obsercations in each combination of states for model. ") %>%
   kable_styling(full_width = F) %>%
   collapse_rows(columns = 1, valign = "top") %>%
   scroll_box(height = "500px")
 ```
 
-In this table, 1 = symmetrical, fossorial/aquatic, and diurnal, respectively. Important to note that  all the diurnal things have nonsymmetrical pupils, so while it's a significant predictor in this model it may not be in the direction we predicted! I don't know how to fully interpret this output..
 
-
-We can also investigate fossorial and aquatic traits in separate models, though both have few species representing them. 
+### Pupil ~ habitat
 
 ```{r}
-FossGLM <- phyloglm(pupil_symm_bi ~ fossorial_bi, 
-                       data = pupils.binary, 
+
+#run model
+ecoGLM_hab <- phyloglm(pupil_symm_bi ~ three_state_eco, 
+                       data = pupils.binary_habact, 
                        phy = eco.tree, 
+                       btol = 25,
                        method = "logistic_MPLE", 
                        boot = 1000)
-summary(FossGLM)
-plot(FossGLM)
+#output
+summary(ecoGLM_hab)
 ```
 
-On its own, fossoriality does not seem to be significantly associated with symmetrical pupils, though I don't understand how to interpret this model output fully. 
+### Pupil ~ activity period
 
 ```{r}
-AquaticGLM <- phyloglm(pupil_symm_bi ~ aquatic_bi, 
-                       data = pupils.binary, 
+
+#run model
+ecoGLM_act <- phyloglm(pupil_symm_bi ~ diurnal_bi, 
+                       data = pupils.binary_habact, 
                        phy = eco.tree, 
+                       btol = 25,
                        method = "logistic_MPLE", 
                        boot = 1000)
-summary(AquaticGLM)
-plot(AquaticGLM)
+
+#output
+summary(ecoGLM_act)
 ```
 
-Aquatic habitat maybe is correlated with symmetrical pupil on its own? Again, not quite sure how to interpret this output but the p-value is significant. 
+### Pupil ~ habitat + activity period
+
+```{r}
+
+#run model
+ecoGLM_habact <- phyloglm(pupil_symm_bi ~ three_state_eco + diurnal_bi, 
+                       data = pupils.binary_habact, 
+                       phy = eco.tree, 
+                       btol = 25,
+                       method = "logistic_MPLE", 
+                       boot = 1000)
+summary(ecoGLM_habact)
+coef(ecoGLM_habact)
+vcov(ecoGLM_habact)
+```
+
+### Model comparison
+
+Then we can compare the two models via AIC and log likelihood. 
+
+```{r}
+
+#model AIC comparison
+aics <- c("habitat" = AIC(ecoGLM_hab),
+          "activity per." = AIC(ecoGLM_act),
+          "hab. + act. per." = AIC(ecoGLM_habact))
+
+#print aics
+aics
+```
+
+The model including both habitat and activity period is a significantly better fit than the one including only habitat, which outperforms the one including only activity period based on a significance criteria of delta AIC > 2.
 
 
 # Adult pupil shape and eye size
 
-We might predict that species with larger eyes would benefit from having a slit pupil. 
+We predicted that species with larger eyes would benefit from having a slit pupil to facilitate a large pupillary range. 
 
 ## Pupil shape and eye size
 
-Here, we plot pupil shape and constriction data are the same and absolute eye size (scaled purple circles). 
+Here, we plot pupil shape and absolute eye size (scaled purple circles). 
 
 ```{r, fig.height=40, fig.width=7}
 #export as pdf
@@ -521,21 +436,21 @@ tiplabels(cex = 0.17*pupils.eye$eye_av,
 
 #add legend for pupil constriction
 legend(x = 40, y = 209,
-       legend = c("Horizontal", "Symmetrical", "Vertical"), 
+       legend = c("Horizontally elongated", "Non-elongated", "Vertically elongated"), 
        col = col_constrict,
        pch = sh_constrict, #shape of labels
        cex = 0.7, 
        box.lty = 0, 
-       title = "Pupil constriction", 
+       title = "Adult pupil", 
        title.adj = 0)
 
 #add legend for pupil shape
-legend(x = 110, y = 209, legend = c("Almond", "Circle", "Diamond", "Slit", "Upside down tear","Upside down triangle"),
+legend(x = 40, y = 206, legend = c("Almond", "Circle", "Diamond", "Slit", "Inverted tear","Inverted triangle"),
        col = "black", pt.bg = "black",
        pch = sh_shape, #shape of labels
        cex = 0.7, 
        box.lty = 0, 
-       title = "Pupil shape", 
+       title = "", 
        title.adj = 0)
 
 
@@ -585,8 +500,7 @@ tipcols.pup <- unname(col_constrict[pups])
 # Make plot------
 
 #export pdf 
-#pdf(file = "../Outputs/Figures/eyesize_phylo_fams.pdf", height=30, width=7)
-pdf(file = "../Outputs/Figures/eyesize_phylo.pdf", height=20, width=7)
+#pdf(file = "../Outputs/Figures/eyesize_phylo.pdf", height=20, width=7)
 
 #call plot with phylo, tip labels, and absolute eye diameters
 plotTree.wBars(eye.tree, aveye, 
@@ -600,14 +514,14 @@ plotTree.wBars(eye.tree, aveye,
 #tiplabels(eye.bars$fam, cex = 0.7, adj = 1) 
 
 #add legend for habitat states
-legend(x  ="left", legend = c("Horizontal", "Symmetrical", "Vertical"), pch = 22, pt.cex= 2, pt.bg = col_constrict, cex = 1, bty = "n",horiz = F)
+legend(x  ="bottomleft", legend = c("Horizontally elongated", "Non-elongated", "Vertically elongated"), pch = 22, pt.cex= 2, pt.bg = col_constrict, cex = 1, bty = "n", horiz = F)
 
-dev.off()
+#dev.off()
 ```
 
 ## Test for correlation 
 
-Here, we use a PGLS in caper to test whether there is a correlation between eye size (absolute eye diameter) and pupil constriction orientation (elongated vs. symmetrical) while accounting for evolutionary relationships. 
+Here, we use a PGLS in caper to test whether there is a correlation between eye size (absolute eye diameter) and pupil shape (elongated vs. non-elongated) while accounting for evolutionary relationships. 
 
 First we put our data and tree into a matched comparative object for caper. 
 
@@ -655,21 +569,17 @@ These look ok. Next we look at the model parameter estimates.
 
 ```{r}
 #main effects
-kable(anova(pgls_pupil.eye), digits = 3, caption= "ANOVA Table for eye size ~ pupil constriction ") %>%
-  kable_styling(full_width = F) %>%
-  collapse_rows(columns = 1, valign = "top")
+anova(pgls_pupil.eye)
 
 #parameter estimates
 summary(pgls_pupil.eye)
 ```
 
-Among species we have eye size data for from the ProcB paper (n = 207), there is a significant association between pupil constriction axis and eye diameter. Species with elongated pupils have significantly larger eyes than species with symmetrical pupils.
-
-Model is significant overall (p <0.001) but R2 is extremely low (0.02) so I’d interpret this with caution, as it doesn’t have high explanatory power despite being significant.
+Among species we have eye size data for from the ProcB paper (n = 207), there is a significant association between pupil constriction axis and eye diameter. Species with elongated pupils have significantly larger eyes than species with non-elongated pupils.
 
 We can make boxplots comparing eye size across pupil types. 
 
-```{r, fig.height=2, fig.width=3}
+```{r, fig.height=4, fig.width=10}
 
 
 #shapes for boxplots
@@ -682,15 +592,19 @@ boxplot_eyesize <- ggplot(data = pupils.eye,
                        aes(y = binary_constriction, x = eye_av)) + 
   geom_boxplot(notch = FALSE, outlier.shape = NA, alpha = 0.9) + #controls boxes  
  geom_jitter(aes(fill = Final_Constriction, shape = Final_Constriction), size = 3, alpha = 0.7, position = position_jitter(0.15)) +
+  scale_y_discrete(limits = c("symmetrical", "elongated"),
+                   labels = c("non-elongated", "elongated")) +
   scale_fill_manual(values = col_constrict,
-                     name = "",
-                     breaks = c("symmetrical", "horizontal", "vertical")) +
+                    name = "",
+                    breaks = c("symmetrical", "horizontal", "vertical"),
+                    labels = c("non-elongated", "horizontally elongated", "vertically elongated")) +
   stat_summary(fun.x = mean, colour = "black", geom = "point", shape = 18, size = 4, show_guide = FALSE) + #controls what stats shown
   scale_shape_manual(values = sh_constrict2,
                      name = "",
-                     breaks = c("symmetrical","horizontal", "vertical")) +
+                     breaks = c("symmetrical","horizontal", "vertical"),
+                     labels = c("non-elongated", "horizontally elongated", "vertically elongated")) +
   theme(text = element_text(size=16), panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.key = element_rect(fill = NA)) + #controls background +
-  ylab("Pupil constriction") +
+  ylab("Pupil shape") +
   xlab("Eye diameter (mm)")
 
 boxplot_eyesize
