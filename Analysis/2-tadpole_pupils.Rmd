@@ -1,7 +1,7 @@
 ---
 title: "Tadpole pupil diversity"
 author: "Katie Thomas"
-date: 10 June 2021
+date: 31 January 2022
 output:
   html_document:
     keep_md: true
@@ -93,7 +93,7 @@ name.check(tad.tree, pupils.tads)
 pupils.tads <- pupils.tads[tad.tree$tip.label,]
 ```
 
-Finally, as we have some repeat sampling within family, we are going to prune the tree again so that it only shows one species per family/sub-family unless the adults differ in pupil constriciton or ecology. This will make the main-text figure easier to read. We will use this pruned tree for the figure. 
+Finally, as we have some repeat sampling within family, we are going to prune the tree again so that it only shows one species per family/sub-family unless the adults differ in pupil constriction or ecology. This will make the main-text figure easier to read. We will use this pruned tree for the figure. 
 
 ```{r}
 
@@ -157,9 +157,9 @@ col_constrict <- c("horizontal" = "#f768fc", #pink
                    "vertical" = "#3abde2") #blue
 
 #pupil constriction symbols
-sh_constrict <- c("horizontal" = 72,
-                  "symmetrical" = 83,
-                  "vertical" = 86)
+sh_constrict <- c("horizontal" = "H",
+                  "symmetrical" = "N",
+                  "vertical" = "V")
                    
 #pupil shape symbols
 sh_shape <- c("almond/slit" = 97,
@@ -188,7 +188,7 @@ col_diur <- c("no" = "gray50",
 #colors for tads (excluding direct developers)
 col_con_tad <- c("symmetrical" = "#6f32a8")
 
-sh_con_tad <- c("symmetrical" = 83)
+sh_con_tad <- c("symmetrical" = "N")
 
 sh_shape_tad <- c("circle"  = 21)
 
@@ -251,7 +251,7 @@ tiplabels(bg = "#FF851B", col = "black",
           offset = 70) 
 
 #add legend for pupil constriction
-legend(x = 0.05, y = 65, legend = c("Horizontal", "Symmetrical", "Vertical"), 
+legend(x = 0.05, y = 65, legend = c("Horizontally elongated", "Non-elongated", "Vertically elongated"), 
        col = col_constrict,
        pch = sh_constrict, #shape of labels
        cex = 0.7, 
@@ -278,7 +278,7 @@ legend(x = 0.05, y = 52, legend = c("aquatic", "fossorial", "scansorial", "diurn
        title.adj = 0)
 
 #add legend for tadpole pupil
-legend(x = 0.05, y = 45, legend = "symmetrical circle", 
+legend(x = 0.05, y = 45, legend = "non-elongated circle", 
        col = "black", pt.bg = "#FF851B",
        pch = 21, #shape of labels
        cex = 0.7, 
@@ -290,7 +290,7 @@ legend(x = 0.05, y = 45, legend = "symmetrical circle",
 #dev.off()
 ```
 
-Next we plot our reduced tadpole dataset with only one species representing each family/subfamily or weird ecology (n = 74 species; all with symmetrical circle pupils) plotted alongside corresponding adult pupil constriction, shape, and ecology.
+Next we plot our reduced tadpole dataset with only one species representing each family/subfamily or ecology (n = 74 species; all with symmetrical circle pupils) plotted alongside corresponding adult pupil constriction, shape, and ecology.
 
 ```{r, fig.height=15, fig.width=8, fig.cap="Adult (left) and tadpole (right) pupil constriction axes and shapes."}
 
@@ -352,7 +352,7 @@ tiplabels(bg = "#FF851B", col = "black",
           offset = 70) 
 
 #add legend for pupil constriction
-legend(x = 0.05, y = 65, legend = c("Horizontal", "Symmetrical", "Vertical"), 
+legend(x = 0.05, y = 65, legend = c("horizontally elongaged", "non-elongated", "vertically elongated"), 
        col = col_constrict,
        pch = sh_constrict, #shape of labels
        cex = 0.7, 
@@ -379,12 +379,12 @@ legend(x = 0.05, y = 52, legend = c("aquatic", "fossorial", "scansorial", "diurn
        title.adj = 0)
 
 #add legend for tadpole pupil
-legend(x = 0.05, y = 45, legend = "symmetrical circle", 
+legend(x = 0.05, y = 45, legend = "non-elongated circle", 
        col = "black", pt.bg = "#FF851B",
        pch = 21, #shape of labels
        cex = 0.7, 
        box.lty = 0, 
-       title = "Tadpole pupil constriction/shape", 
+       title = "Tadpole pupil shape", 
        title.adj = 0)
 
 #finish pdf export
