@@ -1,7 +1,7 @@
 ---
 title: "Adult pupil diversity"
 author: "Katie Thomas"
-date: 10 June 2021
+date: 31 January 2022
 output:
   html_document:
     keep_md: true
@@ -179,9 +179,9 @@ col_constrict <- c("horizontal" = "#f768fc", #pink
                    "vertical" = "#3abde2") #blue
 
 #pupil constriction symbols
-sh_constrict <- c("horizontal" = 72,
-                  "symmetrical" = 83,
-                  "vertical" = 86)
+sh_constrict <- c("horizontal" = "H",
+                  "symmetrical" = "N",
+                  "vertical" = "V")
                    
 #pupil shape symbols
 sh_shape <- c("almond/slit" = 97,
@@ -210,7 +210,7 @@ col_diur <- c("no" = "gray50",
 #colors for tads (excluding direct developers)
 col_con_tad <- c("symmetrical" = "#6f32a8")
 
-sh_con_tad <- c("symmetrical" = 83)
+sh_con_tad <- c("symmetrical" = "N")
 
 sh_shape_tad <- c("circle"  = 21)
 ```
@@ -245,7 +245,7 @@ tiplabels(col = "black", bg = "black",
 #dev.off()
 
 #add legend for pupil constriction
-legend(x = 0.05, y = 90, legend = c("Horizontal", "Symmetrical", "Vertical"), 
+legend(x = 0.05, y = 90, legend = c("Horizontally elongated", "Non-elongatedl", "Vertically elongated"), 
        col = col_constrict,
        pch = sh_constrict, #shape of labels
        cex = 0.7, 
@@ -285,7 +285,7 @@ pupil_fams2 <- pupil.data %>%
 pupil_fams2$Family <- as.character(pupil_fams2$Family)
 ```
 
-We have 72 species, each representing one family sampled. Now we prune the tree to match. 
+We have 73 species, each representing one family sampled. Now we prune the tree to match. 
 
 ```{r}
 
@@ -337,7 +337,6 @@ plot.phylo(fam.tree2,
 #dev.off()
 ```
 
-
 # Species-level visualizations of diversity
 
 ## All data collected
@@ -347,7 +346,7 @@ Here I export a phylogeny showing all of the data we have for all species (too l
 ```{r phylo-pupils, fig.height = 85, fig.width = 5, fig.cap = "Pupil shape across anurans", results = "hide"}
 
 #export as pdf
-pdf("../Outputs/Figures/all_data_phylo.pdf", width = 10, height = 150)
+pdf("../Outputs/Figures/all_data_phylo.pdf", width = 10, height = 175)
 
 #plot phylogeny
 plot.phylo(pupil.tree, 
@@ -402,21 +401,21 @@ tiplabels(bg = "#FF851B", col = "black",
           offset = 80) 
 
 #add legend for pupil constriction
-legend(x = 100, y = 1325, legend = c("Horizontal", "Symmetrical", "Vertical"), 
+legend(x = 100, y = 1325, legend = c("Horizontally elongated", "Non-elongated", "Vertically elongated"), 
        col = col_constrict,
        pch = sh_constrict, 
        cex = 0.7, 
        box.lty = 0, 
-       title = "Adult pupil constriction", 
+       title = "Adult pupil", 
        title.adj = 0)
 
 #add legend for pupil shape
-legend(x = 200, y = 1325, legend = names(sh_shape), 
+legend(x = 200, y = 1325, legend = c("almond or slit", "circle", "diamond", "sideways triangle", "inverted tear", "inverted triangle"), 
        col = "black", pt.bg = "black",
        pch = sh_shape, #shape of labels
        cex = 0.7, 
        box.lty = 0, 
-       title = "Adult pupil shape", 
+       title = "Adult pupil", 
        title.adj = 0)
 
 #add legend for ecology
@@ -425,16 +424,16 @@ legend(x = 350, y = 1325, legend = c("aquatic", "fossorial", "scansorial", "diur
        pch = 19,
        cex = 0.7, 
        box.lty = 0, 
-       title = "Adult Ecology", 
+       title = "Adult ecology", 
        title.adj = 0)
 
 #add legend for tadpole pupil
-legend(x = 450, y = 1325, legend = "symmetrical circle", 
+legend(x = 450, y = 1325, legend = "non-elongated circle", 
        col = "black", pt.bg = "#FF851B",
        pch = 21, #shape of labels
        cex = 0.7, 
        box.lty = 0, 
-       title = "Tadpole pupil shape", 
+       title = "Tadpole pupil", 
        title.adj = 0)
 
 #finish pdf export
@@ -467,7 +466,7 @@ plot.phylo(pupil.tree,
            label.offset = 2) 
 
 #add legend for pupil constriction
-legend(x = 0.05, y = 100, legend = c("Horizontal", "Symmetrical", "Vertical"), 
+legend(x = 0.05, y = 100, legend = c("Horizontaly elongated", "Non-elongated", "Vertically elongated"), 
        col = col_constrict,
        pch = 15,
        cex = 0.7, 
@@ -810,12 +809,12 @@ legend(x="topleft", legend = c("Horizontal", "Symmetrical", "Vertical"),
        title.adj = 0)
 ```
 
-Alternatively, we can color branches based on the highest probablity state at each node. 
+Alternatively, we can color branches based on the highest probability state at each node. 
 
 I did this using a custom function from Christoph Liedtkie (thanks Christoph!!!). 
 
 ```{r}
-#custom function by Christoph Liedtkie
+#custom function by H. Christoph Liedtkie
 
 ## start of function
 find_transitions<-function(phy, tip_states, node_states, simmap=T, stem_prop=0.25) {
@@ -888,6 +887,17 @@ legend("bottomleft",
        pch=19)
 
 dev.off()
+
+#plot tree with painted branches
+plot(tree_painted, 
+     type = "fan",
+     colors=col_constrict, 
+     ftype="off")
+
+legend("bottomleft",
+       col=col_constrict,
+       legend=names(col_constrict),
+       pch=19)
 ```
 
 We can also count how many transitions have likely occurred between each set of states. Here, I have just looked at the mean number of transitions across the 100 trees we ran, as well as the mean number from each state to each other state (again, across 100 trees).
