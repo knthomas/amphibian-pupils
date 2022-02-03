@@ -71,6 +71,9 @@ pupils.tads <- pupil.data %>%
   filter(Tadpole_shape != "none") 
 ```
 
+This data is for This data spans 'r length(levels(as.factor(pupils.tads$ASW_names)))'
+species spanning 'r length(levels(as.factor(pupils.tads$Family)))' families.
+
 Then we prune our tree to these species. 
 
 ```{r}
@@ -140,7 +143,7 @@ pupils.tads_pruned <- pupils.tads_pruned[tad.tree_pruned$tip.label,]
 
 ## Summary
 
-We have collected adult/tadpole pupil data from `r length(levels(as.factor(pupils.tads$genus_species)))` species representing `r length(levels(as.factor(pupils.tads$Genus)))` genera and `r length(levels(as.factor(pupils.tads$Family)))` families. 
+We have collected adult/tadpole pupil data from `r length(levels(as.factor(pupils.tads$ASW_names)))` species representing `r length(levels(as.factor(pupils.tads$Genus)))` genera and `r length(levels(as.factor(pupils.tads$Family)))` families. 
 
 
 # Tadpole pupil diversity
