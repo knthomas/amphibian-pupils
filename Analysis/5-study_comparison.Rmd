@@ -1,7 +1,7 @@
 ---
 title: "Comparison across studies"
 author: "Katie Thomas"
-date: 01 Nov 2021
+date: 4 Feb 2022
 output:
   html_document:
     code_fold: hide
@@ -43,7 +43,7 @@ Here, we import our tidied adult pupil data along with data from two other publi
 
 ```{r}
 #import cleaned data
-thomas.data <- data.frame(read.csv("../Cleaned data/pupil_data_refs.csv", header=TRUE, na.strings=c("NA"))) %>%
+thomas.data <- data.frame(read.csv("../Data/Cleaned data/pupil_data_refs.csv", header=TRUE, na.strings=c("NA"))) %>%
   rename(pupil_ref_Thomas = Source) %>%
   rename(pupil_link_Thomas = Pupil_link) %>%
   rename(pupil_link2_Thomas = Pupil_link_2) %>%
@@ -55,7 +55,7 @@ thomas.data.eco <- thomas.data %>%
    filter(!if_all(c(aquatic, arboreal, fossorial, diurnal), is.na))
 ```
 
-- Number of species sampled: `r length(levels(as.factor(thomas.data$genus_species)))`
+- Number of species sampled: `r length(levels(as.factor(thomas.data$ASW_names)))`
 - Number of genera sampled: `r length(levels(as.factor(thomas.data$Genus)))`
 - Number of families sampled: `r length(levels(as.factor(thomas.data$Family)))`
 
@@ -76,7 +76,7 @@ Note that for pupil categorization, references are not listed. Methods just say 
 
 ```{r}
 #import transcribed data
-yovanovich.data <- data.frame(read.csv("../Cleaned data/other studies/Yovanovich_et_al_2020.csv", header=TRUE, na.strings=c("NA"))) %>%
+yovanovich.data <- data.frame(read.csv("../Data/Cleaned data/other studies/Yovanovich_et_al_2020.csv", header=TRUE, na.strings=c("NA"))) %>%
   mutate(Genus = gsub('_.*', '', Species)) %>%
   mutate(Order = "Anura") %>%
   mutate(genus_species = Species) %>%
@@ -106,7 +106,7 @@ There are two data files, each transcribed from a different supplemental table.
 
 We import both and then merge them into a single dataframe. 
 
-**Note:** For some reason there are duplicates of some of the species in Supplement 2 table from this paper. Species are listed twice, often with different lists of references used for pupil coding.
+**Note:** The supplemental table in Appendix S2 of Cervino et al. 2021 lists 10 duplicate taxa. Species are listed twice, often with different lists of references used for pupil coding.
 
 Duplicate taxa listed in table S2:
 
@@ -123,11 +123,12 @@ Duplicate taxa listed in table S2:
 
 In all cases, the pupil categorization for the duplicate taxa is the same. Thus, we remove duplicates from the dataset before using it. 
 
+Note also that the methods section of Cervino et al. (2021) says that pupil shape was categorized for 3261 anurans and 20 caudatans (= 3281 species total). However, after importing Table S2 and after removing the 1p duplicate taxa from these supplemental data, we find there are 19 caudatans and 3273 anurans (= 3292 species total). 
 
 ```{r}
 
 #import pupil shape data
-cervino.data.shape <- data.frame(read.csv("../Cleaned data/other studies/Cervino_et_al_2021_pupils.csv", header=TRUE, na.strings=c("NA"))) %>%
+cervino.data.shape <- data.frame(read.csv("../Data/Cleaned data/other studies/Cervino_et_al_2021_pupils.csv", header=TRUE, na.strings=c("NA"))) %>%
   mutate(genus_species = gsub(' ', '_', Species)) %>%
   mutate(Genus = gsub(' .*', '', Species)) %>%
   rename(pupil_ref_Cervino = Reference_pupil) %>%
@@ -139,8 +140,14 @@ n_occur <- data.frame(table(cervino.data.shape$genus_species))
 #remove duplicate species
 cervino.data.shape <- filter(cervino.data.shape,!duplicated(genus_species))
 
+#find number of anurans in dataset
+nrow(filter(cervino.data.shape, Order == "Caudata"))
+
+#find number of caudatans in dataset
+nrow(filter(cervino.data.shape, Order == "Anura"))
+
 #import ecology data
-cervino.data.eco <- data.frame(read.csv("../Cleaned data/other studies/Cervino_et_al_2021_ecology.csv", header=TRUE, na.strings=c("NA"))) %>%
+cervino.data.eco <- data.frame(read.csv("../Data/Cleaned data/other studies/Cervino_et_al_2021_ecology.csv", header=TRUE, na.strings=c("NA"))) %>%
   mutate(genus_species = gsub(' ', '_', Species)) %>%
   mutate(Genus = gsub(' .*', '', Species)) %>%
   rename(eco_ref_Cervino = Reference_ecology)
@@ -217,8 +224,8 @@ filledASW <- missingASW %>%
                                    "Arthroleptis_taeniatus" = "Arthroleptis_taeniatus",
                                    "Sclerophrys_garmani" = "Sclerophrys_garmani",
                                    "Bufo_spinosus" = "Bufo_spinosus",
-                                   "Bufotes_variabilis"="Bufotes_sitibundus", #no match, chose one of mult synonyms
-                                   "Rhinella_pombali"="Rhinella_crucifer", #no match, chose one of mult synonyms
+                                   "Bufotes_variabilis"= "NA", #no match, multiple synonyms
+                                   "Rhinella_pombali"= "NA", #no match, chose multiple synonyms
                                    "Cornufer_guentheri"="Cornufer_guentheri",
                                    "Cornufer_guppyi"="Cornufer_guppyi",
                                    "Craugastor_podiciferus"="Craugastor_podiciferus",
@@ -238,18 +245,18 @@ filledASW <- missingASW %>%
                                    "Phrynobatrachus_liberiensis" = "Phrynobatrachus_liberiensis",
                                    "Ptychadena_mascareniensis" = "Ptychadena_mascareniensis",
                                    "Papurana_daemeli" = "Papurana_daemeli",
-                                   "Pelophylax_esculentus" = "Pelophylax_lessonae", #no match, chose one of mult synonyms
+                                   "Pelophylax_esculentus" = "NA", #no match, mult synonyms
                                    "Leptomantis_fasciatus" = "Leptomantis_fasciatus",
-                                   "Sclerophrys_rangeri" = "Sclerophrys_rangeri", #no ASW synonym, keeping original name
-                                   "Centrolene_altitudinale" = "Centrolene_altitudinale", #no ASW synonym, keeping original name
+                                   "Sclerophrys_rangeri" = "NA", #no ASW synonym
+                                   "Centrolene_altitudinale" = "NA", #no ASW synonym
                                    "Liurana_alpine" = "Liurana_alpina", 
                                    "Bahius_bilineatus" = "Bahius_bilineatus",
-                                   "Cycloramphus_Eleuthero" = "Cycloramphus_Eleuthero", #this appears to be a typo in the dataset, species does not exist and capitalization suggests it's a genus name typo
+                                   "Cycloramphus_Eleuthero" = "NA", #this appears to be a typo in the dataset, species does not exist and capitalization suggests it's a genus name typo
                                    "Boana_rufitelus" = "Boana_rufitela",
                                    "Nyctimantis_brunoi" = "Nyctimantis_brunoi",
                                    "Nyctimantis_pomba" = "Nyctimantis_pomba",
                                    "Nyctimantis_siemersi" = "Nyctimantis_siemersi",
-                                   "Trachycephalus_venulosus" = "Trachycephalus_typhonius", #not exact synonym on ASW but my best guess
+                                   "Trachycephalus_venulosus" = "NA", #not synonym on ASW 
                                    "Nyctimystes_lubisi" = "Nyctimystes_lubisi",
                                    "Nyctimystes_multicolor" = "Nyctimystes_multicolor",
                                    "Nyctomystes_pterodactyla" = "Nyctimystes_pterodactyla", #typo in genus
@@ -267,7 +274,7 @@ filledASW <- missingASW %>%
                                    "Uperoleia_davisae" = "Uperoleia_daviesae", #typo in species name
                                    "Anhydrophryne_ngogoniensis" = "Anhydrophryne_ngongoniensis", #typo in species name
                                    "Lithobates_johnsi" = "Lithobates_johni", #typo in species name
-                                   "Papurana_baramica" = "Papurana_baramica", #species does not exit - maybe they meant Pulchrana baramica? Can't be sure so will not change.
+                                   "Papurana_baramica" = "NA", #species does not exist - maybe they meant Pulchrana baramica? Can't be sure so will not change.
                                   "Vampyrius_vampyrus" = "Vampyrius_vampyrus",
                                    "Rhyacotritum_variegatus" = "Rhyacotriton_variegatus" #typo in genus name.
                                    ))
@@ -283,23 +290,30 @@ cervino.ASW <- left_join(cervino.data, cervino.update2, by = "genus_species")
 n_occur <- data.frame(table(cervino.ASW$ASW_names))
 ```
 
-After converting to names current in Frost (2021) taxonomy, we find that 30 species in Cervino et al. (2021) are mapping to duplicate Amphibian Species of the World names. 
 
-Here are the number of species according to Cervino et al (2021):
+After converting to names current in Frost (2021) taxonomy, we find that 27 species in Cervino et al. (2021) a synonym of one or more other species in the dataset according to Amphibian Species of the World, and 8 more species are not matching to any clear species (may have many possible synonyms or just not match at all) in the ASW taxonomy.
+
+Here are the number of species using taxonomy according to Cervino et al (2021):
 
 ```{r}
 length(levels(as.factor(cervino.data$genus_species)))
 ```
 
-And the number according to Frost (2021):
+And here are the number of species using taxonomy according to Frost (2021):
 
 ```{r}
+#remove NAs from species that didn't match or were ambiguous with ASW
+cervino.ASW <- cervino.ASW %>%
+  filter(ASW_names != "NA") %>%
+  droplevels()
+
+#number of species kept
 length(levels(as.factor(cervino.ASW$ASW_names)))
 ```
 
-These are as follows:
+Synonyms/duplicated taxa according to ASW  are as follows:
 
-(format: ASW name = Cervino names that match)
+(format: ASW name = Cervino et al. names that match)
 
 **These synonyms show consistent pupil categorizations**
 
@@ -326,7 +340,6 @@ These are as follows:
 - Pithecopus_oreades = Phyllomedusa_araguari, Phyllomedusa_oreades
 - Ranoidea_raniformis = Litoria_raniformis, Ranoidea_raniformis
 - Rhacophorus_calcaneus = Rhacophorus_calcaneus, Rhacophorus_chuyangsinensis
-- Rhinella_crucifer = Rhinella_crucifer, Rhinella_pombali
 - Rulyrana_saxiscandens = Rulyrana_saxiscandens, Rulyrana_tangarana
 - Tepuihyla_rodriguezi = Tepuihyla_rodriguezi, Tepuihyla_talbergae
 - Uperoleia_rugosa = Uperoleia_capitulata, Uperoleia_rugosa
@@ -343,6 +356,15 @@ These are as follows:
 *Note: N. hosmeri is a junior synonym of R. dayi according to Frost (2021) as of 30 October 2021. However, in Cervino et al. N. hosmeri is categorized as having a Vertical pupil (cites Tyler and Davies (1979)) and R. dayi as having a Horizontal pupil (cites Anstis (2013); CalPhotos ID: 0000 0000 0310 0417). 
 
 When we merge datasets, duplicate ASW names will be dropped, which is why I have noted them above. 
+
+Now that we've converted taxonomy, we can look at species numbers again (according to ASW).
+
+Yovanovich et al.
+- `r length(levels(as.factor(yovanovich.ASW$genus_species)))` species according to ASW
+
+
+Cervino et al. 
+- `r length(levels(as.factor(cervino.ASW$genus_species)))` species according to ASW
 
 
 # Sampling overlap
@@ -362,14 +384,17 @@ thomas.join <- thomas.data %>%
          fossorial_Thomas = fossorial, 
          arboreal_Thomas = arboreal, 
          diurnal_Thomas = diurnal) %>%
-  select(ASW_names, genus_species_Thomas, Order, Family, constriction_Thomas, shape_Thomas, aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas, pupil_ref_Thomas, pupil_link_Thomas, pupil_link2_Thomas, ecology_ref_Thomas)
+  select(ASW_names, genus_species_Thomas, Order, Family, constriction_Thomas, shape_Thomas, aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas, pupil_ref_Thomas, pupil_link_Thomas, pupil_link2_Thomas, ecology_ref_Thomas) %>%
+  droplevels
 
 cervino.join <- cervino.ASW %>%
+  distinct(ASW_names, .keep_all = TRUE) %>%
   rename(genus_species_Cervino = genus_species,
          shape_Cervino = Pupil_shape,
          habit_Cervino = Adult_habits,
          activity_Cervino = Diel_activity) %>%
-  select(ASW_names, Order, Family, genus_species_Cervino, shape_Cervino, habit_Cervino, activity_Cervino, pupil_ref_Cervino, eco_ref_Cervino)
+  select(ASW_names, Order, Family, genus_species_Cervino, shape_Cervino, habit_Cervino, activity_Cervino, pupil_ref_Cervino, eco_ref_Cervino) %>%
+  droplevels()
 
 yovanovich.join <- yovanovich.ASW %>%
   rename(genus_species_Yov = genus_species,
@@ -430,11 +455,12 @@ kable(counts[ , c("sampling", "n_species")], caption = "Sampling overlap of spec
   scroll_box(height = "500px")
 ```
 
-To date across these three studies, 3641 amphibian species (according to Frost, 2021) have been coded for pupil shape. 
+To date across these three studies, 3642 amphibian species (according to Frost, 2021) have been coded for pupil shape. 
 
 Next, we pull out the species that we categorized in this study that were also categorized by one or both of the other published studies so that we can compare our findings. 
 
 ```{r}
+
 overlap.data <- shape.compare %>%
   filter(sampling == "Thomas & Cervino" | sampling == "Thomas & Yovanovich"| sampling == "Thomas & Cervino & Yovanovich") %>%
     mutate_if(is.character,as.factor)
@@ -471,59 +497,68 @@ Yovanovich et al. coded shape as:
 levels(shape.compare$shape_Yov)
 ```
 
-From the descriptions of classification from each paper, we know that:
+From the descriptions of classification from each paper, we know that some categories shoudl correspond to our three main shape categories (vertically elongated, horizontally elongated, non-elongated):
 
-1) Species that Yovanovich coded as "round" should match species that we coded as "circle" for shape and "symmetrical" for orientation 
+1) Species that Yovanovich et al. coded as "round" should match species that we coded as "non-elongated".
 
-2) Species that Yovanovich coded as "elongate" should match species that we coded as "vertical" or "horizontal" for orientation
+2) Species that Yovanovich et al. coded as "elongate" should match species that we coded as "vertically elongated" or "horizontally elongated" 
 
-3) Species that Cervino coded as "Circular" should match species that we coded as "circle" for shape and "symmetrical" for orientation 
+3) Species that Cervino et al. coded as "Circular" should match species that we coded as ""circle" for shape and "symmetrical" for orientation "non-elongated"
 
-4) Species that Cervino coded as "Horizontal" should match species that we coded as "horizontal" for orientation (only in this direction; some things we coded as horizontal would match other Cervino shapes but all that Cervino codes as horizontal should match to us coding as horizontal)
+4) Species that Cervino et al. coded as "Horizontal" should match species that we coded as "horizontaly elongatedl". Note, however, that we only predict this in the stated direction; some things we coded as horizontal would match other Cervino et al. shapes that are elongated horizontally, but all pupils that Cervino et al. coded as "horizontal" should also be "horizontally elongated" in our dataset. 
 
-5) Species that Cervino coded as "Vertical" should match species that we coded as "vertical" for orientation (only in this direction; some things we coded as vertical would match other Cervino shapes but all that Cervino codes as vertical should match to us coding as vertical)
+5) Species that Cervino et al. coded as "Vertical" should match species that we coded as "vertically elongated". Note, however, that we only predict this in the stated direction; some things we coded as "vertically elongated" would match other Cervino et al. shapes, but all species that Cervino et. al code as "vertical" should be coded by us as "vertically elongated".
 
-Other shapes coded by Cervino don't have a direct translation to our shapes (except perhaps "triangular" and our "triangle", but since we don't quantitatively address shape in our paper I am focusing on the important functional aspect that we do analyze, which is the orientation of a constricted pupil).
+Other shapes coded by Cervino et al. don't have a direct translation to our three main shapes (horizontally elongated, vertically elongated, non-elongated) that we used in analyses, so I do not compare them here. 
 
 Below, I take each of these expectations and create a new column in the dataframe with notes on whether the studies agree on categorization or disagree, and how. This should help us to go through mismatches and get a sense of what is going on, and to quantify the extent to which the studies replicate pupil categorization or disagree. 
 
 ```{r}
 
 overlap.comments <- overlap.data %>%
-# 1) Species that Yovanovich coded as "round" should match species that we coded as "circle" for shape and "symmetrical" for orientation 
+# 1) Species that Yovanovich  et al. coded as "round" should match species that we coded as "circle" for shape and "symmetrical" for orientation 
   mutate(Yov_compare = ifelse(shape_Thomas=="circle" & shape_Yov=="round", "T & Y agree on circular pupil", NA)) %>%
-  mutate(Yov_compare = ifelse(shape_Thomas=="circle" & shape_Yov!="round" & !is.na(shape_Yov), "T & Y disagree on circular pupil", Yov_compare)) %>%
-  mutate(Yov_compare = ifelse(shape_Thomas!="circle" & shape_Yov=="round" & !is.na(shape_Thomas), "T & Y disagree - Yov says circular Thom says elongated", Yov_compare)) %>%
-# 2) Species that Yovanovich coded as "elongate" should match species that we coded as "vertical" or "horizontal" for orientation
+  mutate(Yov_compare = ifelse(shape_Thomas=="circle" & shape_Yov!="round" & !is.na(shape_Yov), "T & Y disagree - T says circular Y says elongated", Yov_compare)) %>%
+  mutate(Yov_compare = ifelse(shape_Thomas!="circle" & shape_Yov=="round" & !is.na(shape_Thomas), "T & Y disagree - Y says circular T says elongated", Yov_compare)) %>%
+  mutate(Yov_compare = ifelse(constriction_Thomas=="symmetrical" & shape_Yov=="elongate", "T & Y disagree - T says nonelongate and Y says elongate", Yov_compare)) %>%
+
+  # 2) Species that Yovanovich coded as "elongate" should match species that we coded as "vertical" or "horizontal" for orientation
   mutate(Yov_compare = ifelse((constriction_Thomas=="horizontal" | constriction_Thomas=="vertical") & shape_Yov=="elongate", "T & Y agree on elongated pupil", Yov_compare)) %>%
-# 3) Species that Cervino coded as "Circular" should match species that we coded as "circle" for shape and "symmetrical" for orientation 
+
+  # 3) Species that Cervino coded as "Circular" should match species that we coded as "circle" for shape and "symmetrical" for orientation 
   mutate(Cerv_compare = ifelse(shape_Thomas=="circle" & shape_Cervino=="Circular", "T & C agree on circular pupil", NA)) %>%
   mutate(Cerv_compare = ifelse(shape_Thomas=="circle" & shape_Cervino!="Circular" & !is.na(shape_Cervino), "T & C disagree - T says circular C says not", Cerv_compare)) %>%
   mutate(Cerv_compare = ifelse(shape_Thomas!="circle" & shape_Cervino=="Circular" & !is.na(shape_Thomas), "T & C disagree - C says circular T says not", Cerv_compare)) %>%
-# 4) Species that Cervino coded as "Horizontal" should match species that we coded as "horizontal" for orientation (only in this direction; some things we coded as horizontal would match other Cervino shapes but all that Cervino codes as horizontal should match to us coding as horizontal)
+
+  # 4) Species that Cervino coded as "Horizontal" should match species that we coded as "horizontal" for orientation (only in this direction; some things we coded as horizontal would match other Cervino shapes but all that Cervino codes as horizontal should match to us coding as horizontal)
   mutate(Cerv_compare = ifelse(constriction_Thomas=="horizontal" & shape_Cervino=="Horizontal", "T & C agree on horizontal pupil", Cerv_compare)) %>%
   mutate(Cerv_compare = ifelse(constriction_Thomas!="horizontal" & shape_Cervino=="Horizontal" & !is.na(constriction_Thomas), "T & C disagree - C says horizontal T says not", Cerv_compare)) %>%
-# 5) Species that Cervino coded as "Vertical" should match species that we coded as "vertical" for orientation (only in this direction; some things we coded as vertical would match other Cervino shapes but all that Cervino codes as vertical should match to us coding as vertical)
+
+  # 5) Species that Cervino coded as "Vertical" should match species that we coded as "vertical" for orientation (only in this direction; some things we coded as vertical would match other Cervino shapes but all that Cervino codes as vertical should match to us coding as vertical)
  mutate(Cerv_compare = ifelse(constriction_Thomas=="vertical" & shape_Cervino=="Vertical", "T & C agree on vertical pupil", Cerv_compare)) %>%
   mutate(Cerv_compare = ifelse(constriction_Thomas!="vertical" & shape_Cervino=="Vertical" & !is.na(constriction_Thomas), "T & C disagree - C says vertical T says not", Cerv_compare))
-
-overlap.comments.tidy <- overlap.comments %>% select(ASW_names, Yov_compare, Cerv_compare, shape_Thomas, constriction_Thomas, pupil_ref_Thomas, pupil_link_Thomas, pupil_link2_Thomas, shape_Cervino, pupil_ref_Cervino, shape_Yov, Order, Family, Genus)
-
-#export all data
-write.csv(overlap.comments.tidy, file = "../study_comparison.csv")
 ```
 
-We can export this file for closer inspection, and look at a quick summary of how pupil categorization compared across studies:
+We can look at a quick summary of how pupil categorization compared across studies:
 
 ```{r}
-#Summary of overlap with Yovanovich
-counts_y <- overlap.comments %>%
+
+# overlap with Yovanovich et al. 
+yt <- overlap.comments %>% filter(!if_any(c(constriction_Thomas, shape_Yov,), is.na)) %>% 
+  select(ASW_names, constriction_Thomas, shape_Thomas, shape_Yov, shape_Cervino, Yov_compare)
+
+#Summary of overlap with Yovanovich et al. 
+counts_y <- yt %>%
   mutate_if(is.character,as.factor) %>%
   group_by(Yov_compare) %>%
   summarise(n_species = n())
 
+#overlap data with Cervino et al. (where pupil = horizontal, circular, or vertical)
+ct <- overlap.comments %>% filter(!if_any(c(constriction_Thomas, shape_Cervino,), is.na)) %>% select(ASW_names, constriction_Thomas, shape_Thomas, shape_Yov, shape_Cervino, Cerv_compare) %>%
+  filter(shape_Cervino %in% c("Circular","Horizontal","Vertical"))
+
 #Summary of overlap with Cervino
-counts_c <- overlap.comments %>%
+counts_c <- ct %>%
   mutate_if(is.character,as.factor) %>%
   group_by(Cerv_compare) %>%
   summarise(n_species = n())
@@ -540,230 +575,3 @@ kable(counts_c[ , c("Cerv_compare", "n_species")], caption = "Comparison of pupi
   collapse_rows(columns = 1, valign = "top") %>%
   scroll_box(height = "500px")
 ```
-
-We can also export a file that only includes data that doesn't match across studies, so that we can examine those data more closely. 
-
-```{r}
-mismatch.data <- overlap.comments.tidy %>%
-  filter(
-    Yov_compare=="T & Y disagree - Yov says circular Thom says elongated" | 
-    Cerv_compare=="T & C disagree - C says horizontal T says not" | 
-    Cerv_compare=="T & C disagree - C says vertical T says not" | 
-    Cerv_compare=="T & C disagree - T says circular C says not")
-
-#export mismatched data
-write.csv(mismatch.data, file = "../mismatched_data.csv")
-```
-
-
-
-## Sampling overlap for pupil shape + ecology
-
-Here we first can take a look at the species across all studies that have been coded for ecology in some way and examine how they are distributed across studies. 
-
-```{r}
-
-#subset for ecology
-eco.compare <- pupils.all %>%
-  #filter to include only species with ecological data
-  filter(!if_all(c(aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas, habit_Cervino, activity_Cervino, activity_Yov), is.na)) %>%
-  #add column to show study ecology sampling/overlap
-  #just thomas sampled
-  mutate(eco_sampling = ifelse(!if_all(c(aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas), is.na) & if_all(c(habit_Cervino, activity_Cervino), is.na) & is.na(activity_Yov), "Thomas", NA)) %>%
-    #just cervino sampled
-   mutate(eco_sampling = ifelse(if_all(c(aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas), is.na) & !if_all(c(habit_Cervino, activity_Cervino), is.na) & is.na(activity_Yov), "Cervino", eco_sampling)) %>%
-  #just yovanovich sampled
-  mutate(eco_sampling = ifelse(if_all(c(aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas), is.na) & if_all(c(habit_Cervino, activity_Cervino), is.na) & !is.na(activity_Yov), "Yovanovich", eco_sampling)) %>%
-  #thomas + cervino sampled
-  mutate(eco_sampling = ifelse(!if_all(c(aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas), is.na) & !if_all(c(habit_Cervino, activity_Cervino), is.na) & is.na(activity_Yov), "Thomas & Cervino", eco_sampling)) %>%
-  #thomas + yovanovich sampled
-  mutate(eco_sampling = ifelse(!if_all(c(aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas), is.na) & if_all(c(habit_Cervino, activity_Cervino), is.na) & !is.na(activity_Yov), "Thomas & Yovanovich", eco_sampling)) %>%
-    #cervino + yovanovich sampled
-  mutate(eco_sampling = ifelse(if_all(c(aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas), is.na) & !if_all(c(habit_Cervino, activity_Cervino), is.na) & !is.na(activity_Yov), "Cervino & Yovanovich", eco_sampling)) %>%
-  #thomas + cervino + yovanovich sampled
- mutate(eco_sampling = ifelse(!if_all(c(aquatic_Thomas, fossorial_Thomas, arboreal_Thomas, diurnal_Thomas), is.na) & !if_all(c(habit_Cervino, activity_Cervino), is.na) & !is.na(activity_Yov), "Thomas & Cervino & Yovanovich", eco_sampling)) %>%
-  mutate_if(is.character,as.factor)
-
-#Number of species sampled by each study 
-counts.eco <- eco.compare %>%
-  mutate(eco_sampling = factor(eco_sampling, levels = c("Thomas", "Cervino", "Yovanovich", "Thomas & Cervino", "Thomas & Yovanovich", "Cervino & Yovanovich", "Thomas & Cervino & Yovanovich"))) %>%
-  group_by(eco_sampling) %>%
-  summarise(n_species = n())
-            
-#summary of sampling
-kable(counts.eco[ , c("eco_sampling", "n_species")], caption = "Sampling overlap of species coded for ecology across studies of amphibian pupil shape") %>%
-  kable_styling(full_width = F) %>%
-  collapse_rows(columns = 1, valign = "top") %>%
-  scroll_box(height = "500px")
-
-
-```
-
-Next, we find the subset of species that we coded for ecology that also overlap in sampling with one/both of the other studies so that we can compare ecological trait categorizations. 
-
-```{r}
-#subset to species with overlap across studies
-overlap.eco <- eco.compare %>%
-  filter(eco_sampling == "Thomas & Cervino" | eco_sampling == "Thomas & Yovanovich"| eco_sampling == "Thomas & Cervino & Yovanovich") %>%
-    mutate_if(is.character,as.factor)
-```
-
-In total, there are `r nrow(overlap.eco)` species in our ecology + pupil dataset that overlap with other studies. 
-
-Next, we will flag major mismatches between ecological categorizations across these species/studies. Again this is a bit tricky, as each study used a different approach for ecological categorization. 
-
-First, we take a look at the levels of categorization from each study:
-
-Our study (Thomas et al.) coded ecological traits into binary states (yes/no) for: aquatic, fossorial, arboreal, diurnal. 
-
-```{r}
-levels(eco.compare$aquatic_Thomas)
-levels(eco.compare$fossorial_Thomas)
-levels(eco.compare$arboreal_Thomas)
-levels(eco.compare$diurnal_Thomas)
-```
-
-Yovanovich et al. categorized activity period into binary states:
-
-```{r}
-levels(eco.compare$activity_Yov)
-```
-
-Cervino et al. categorized adult habit as:
-
-```{r}
-levels(eco.compare$activity_Cervino)
-```
-
-and adult activity period as: 
-
-```{r}
-levels(eco.compare$habit_Cervino)
-```
-
-
-From the descriptions of classification from each paper, we know that:
-
-1) Species that Yovanovich coded as "diurnal" should match species that we coded as "yes" for diurnal & species Yovanovich coded as "nocturnal" should match species that we coded as "no" for diurnal.
-
-2) Species that Cervino coded as "Diurnal" should match species that we coded as "yes" for diurnal & species that Cervino coded as "Arrhythmic" or "Nocturnal" should match species that we coded as "no" for diurnal.
-
-3) Species that Cervino coded as "Aquatic" should match species that we coded as "yes" for aquatic. 
-
-4) Species that Cervino coded as "Scansorial" should (perhaps) match species that we coded as "yes" for arboreal. Note that the criteria for categorization differ a bit and could results in differences, but still useful to have a look at this. 
-
-5) Species that Cervino coded as "Fossorial" may (definitions differ slightly) match species that we coded as "yes" for fossorial. Note that the criteria for categorization differ (In Cervino fossorial includes subfossorial/leaf litter species) and could results in differences, but still useful to have a look at this. 
-
-Below, I take each of these expectations and create a new column in the dataframe with notes on whether the studies agree on categorization or disagree, and how. This should help us to go through mismatches and get a sense of what is going on, and to quantify the extent to which the studies ecological assignments. 
-
-```{r}
-
-eco.overlap.comments <- overlap.eco %>%
-  # 1) Species that Yovanovich coded as "diurnal" should match species that we coded as "yes" for diurnal & species Yovanovich coded as "nocturnal" should match species that we coded as "no" for diurnal.
-  mutate(Yov_comp_diur = ifelse(diurnal_Thomas=="yes" & activity_Yov=="diurnal", "T & Y agree on diurnal activity", NA)) %>%
-  mutate(Yov_comp_diur = ifelse(diurnal_Thomas=="no" & activity_Yov=="diurnal", "T & Y disagree - Y says diurnal and T says not", Yov_comp_diur)) %>%
-  mutate(Yov_comp_diur = ifelse(diurnal_Thomas=="yes" & activity_Yov=="nocturnal", "T & Y disagree - T says diurnal and Y says not", Yov_comp_diur)) %>%
-  mutate(Yov_comp_diur = ifelse(diurnal_Thomas=="no" & activity_Yov=="nocturnal", "T & Y agree on non-diurnal activity", Yov_comp_diur)) %>%
-# 2) Species that Cervino coded as "Diurnal" should match species that we coded as "yes" for diurnal & species that Cervino coded as "Arrhythmic" or "Nocturnal" should match species that we coded as "no" for diurnal.
-  mutate(Cerv_comp_diur = ifelse(diurnal_Thomas=="yes" & activity_Cervino=="Diurnal", "T & C agree on diurnal activity", NA)) %>%
-  mutate(Cerv_comp_diur = ifelse(diurnal_Thomas=="yes" & activity_Cervino!="Diurnal" & !is.na(activity_Cervino), "T & C disagree - T says diurnal and C says not", Cerv_comp_diur)) %>%
-  mutate(Cerv_comp_diur = ifelse(diurnal_Thomas=="no" & activity_Cervino=="Diurnal", "T & C disagree - C says diurnal and T says not", Cerv_comp_diur)) %>%
-  mutate(Cerv_comp_diur = ifelse(diurnal_Thomas=="no" & activity_Cervino!="Diurnal" & !is.na(activity_Cervino), "T & C agree on non-diurnal activity", Cerv_comp_diur)) %>%
-# 3) Species that Cervino coded as "Aquatic" should match species that we coded as "yes" for aquatic. 
-   mutate(Cerv_comp_aq = ifelse(aquatic_Thomas =="yes" & habit_Cervino=="Aquatic", "T & C agree on aquatic", NA)) %>%
-  mutate(Cerv_comp_aq = ifelse(aquatic_Thomas =="yes" & habit_Cervino!="Aquatic" & !is.na(habit_Cervino), "T & C disagree - T says aquati, C not", Cerv_comp_aq)) %>%
-  mutate(Cerv_comp_aq = ifelse(aquatic_Thomas =="no" & habit_Cervino!="Aquatic" & !is.na(habit_Cervino), "T & C agree on non-aquatic", Cerv_comp_aq)) %>%
-  mutate(Cerv_comp_aq = ifelse(aquatic_Thomas == "no" & habit_Cervino =="Aquatic", "T & C disagree - C says aquatic, T not", Cerv_comp_aq)) %>%
-# 4) Species that Cervino coded as "Scansorial" should (perhaps) match species that we coded as "yes" for arboreal. Note that the criteria for categorization differ a bit and could results in differences, but still useful to have a look at this. 
-  mutate(Cerv_comp_arb = ifelse(arboreal_Thomas =="yes" & habit_Cervino=="Scansorial", "T & C agree on scansorial/arboreal", NA)) %>%
-  mutate(Cerv_comp_arb = ifelse(arboreal_Thomas =="yes" & habit_Cervino!="Scansorial" & !is.na(habit_Cervino), "T & C disagree - T says arboreal, C not", Cerv_comp_arb)) %>%
-  mutate(Cerv_comp_arb = ifelse(arboreal_Thomas =="no" & habit_Cervino!="Scansorial" & !is.na(habit_Cervino), "T & C agree on non-arboreal", Cerv_comp_arb)) %>%
-  mutate(Cerv_comp_arb = ifelse(arboreal_Thomas == "no" & habit_Cervino =="Scansorial", "T & C disagree - C says scanosrial, T not", Cerv_comp_arb)) %>%
-# 5) Species that Cervino coded as "Fossorial" may (definitions differ slightly) match species that we coded as "yes" for fossorial. Note that the criteria for categorization differ (In Cervino fossorial includes subfossorial/leaf litter species) and could results in differences, but still useful to have a look at this.
- mutate(Cerv_comp_foss = ifelse(fossorial_Thomas =="yes" & habit_Cervino=="Fossorial", "T & C agree on fossorial", NA)) %>%
-  mutate(Cerv_comp_foss = ifelse(fossorial_Thomas =="yes" & habit_Cervino!="Fossorial" & !is.na(habit_Cervino), "T & C disagree - T says fossorial, C not", Cerv_comp_foss)) %>%
-  mutate(Cerv_comp_foss = ifelse(fossorial_Thomas =="no" & habit_Cervino!="Fossorial" & !is.na(habit_Cervino), "T & C agree on non-fossorial", Cerv_comp_foss)) %>%
-  mutate(Cerv_comp_foss = ifelse(fossorial_Thomas == "no" & habit_Cervino =="Fossorial", "T & C disagree - C says fossorial, T not", Cerv_comp_foss))
-  
-#export
-write.csv(eco.overlap.comments, file = "../ecology_comparison.csv")
-```
-
-We can export this file for closer inspection, and look at a quick summary of how ecological categorization compared across studies:
-
-```{r}
-#Summary of overlap for activity period with Yovanovich
-counts_yact <- eco.overlap.comments %>%
-  mutate_if(is.character,as.factor) %>%
-  group_by(Yov_comp_diur) %>%
-  summarise(n_species = n())
-
-kable(counts_yact[ , c("Yov_comp_diur", "n_species")], caption = "Comparison of activity period categorization in this study vs. Yovanovich et al. 2020") %>%
-  kable_styling(full_width = F) %>%
-  collapse_rows(columns = 1, valign = "top") %>%
-  scroll_box(height = "500px")
-
-#Summary of overlap for activity period with Cervino
-counts_cact <- eco.overlap.comments %>%
-  mutate_if(is.character,as.factor) %>%
-  group_by(Cerv_comp_diur) %>%
-  summarise(n_species = n())
-
-kable(counts_cact[ , c("Cerv_comp_diur", "n_species")], caption = "Comparison of activity period categorization in this study vs. Cervino et al. 2021") %>%
-  kable_styling(full_width = F) %>%
-  collapse_rows(columns = 1, valign = "top") %>%
-  scroll_box(height = "500px")
-
-#Summary of overlap for aquatic with Cervino
-counts_aq <- eco.overlap.comments %>%
-  mutate_if(is.character,as.factor) %>%
-  group_by(Cerv_comp_aq) %>%
-  summarise(n_species = n())
-
-kable(counts_aq[ , c("Cerv_comp_aq", "n_species")], caption = "Comparison of designation of aquatic species in this study vs. Cervino et al. 2021") %>%
-  kable_styling(full_width = F) %>%
-  collapse_rows(columns = 1, valign = "top") %>%
-  scroll_box(height = "500px")
-
-
-#Summary of overlap for scansorial with Cervino
-counts_arb <- eco.overlap.comments %>%
-  mutate_if(is.character,as.factor) %>%
-  group_by(Cerv_comp_arb) %>%
-  summarise(n_species = n())
-
-kable(counts_arb[ , c("Cerv_comp_arb", "n_species")], caption = "Comparison of designation of arboreal/scansorial species in this study vs. Cervino et al. 2021. Note that system of classification was slightly different.") %>%
-  kable_styling(full_width = F) %>%
-  collapse_rows(columns = 1, valign = "top") %>%
-  scroll_box(height = "500px")
-
-#Summary of overlap for fossorial with Cervino
-counts_foss <- eco.overlap.comments %>%
-  mutate_if(is.character,as.factor) %>%
-  group_by(Cerv_comp_foss) %>%
-  summarise(n_species = n())
-
-kable(counts_foss[ , c("Cerv_comp_foss", "n_species")], caption = "Comparison of designation of fossorial species in this study vs. Cervino et al. 2021. Note that system of classification was slightly different.") %>%
-  kable_styling(full_width = F) %>%
-  collapse_rows(columns = 1, valign = "top") %>%
-  scroll_box(height = "500px")
-            
-```
-
-We can also export a file that only includes species with ecological data that doesn't match across studies, so that we can examine those data more closely. 
-
-```{r}
-eco.mismatch.data <- eco.overlap.comments %>%
-  filter(
-    Yov_comp_diur=="T & Y disagree - T says diurnal and Y says not" | 
-    Cerv_comp_diur=="T & C disagree - T says diurnal and C says not" | 
-    Cerv_comp_aq=="T & C disagree - C says aquatic, T not" | 
-    Cerv_comp_aq=="T & C disagree - T says aquati, C not" | 
-    Cerv_comp_arb=="T & C disagree - C says scanosrial, T not" | 
-    Cerv_comp_foss=="T & C disagree - C says fossorial, T not"| 
-    Cerv_comp_foss=="T & C disagree - T says fossorial, C not")
-
-#export mismatched data
-write.csv(eco.mismatch.data, file = "../mismatched_data_ecology.csv")
-```
-
