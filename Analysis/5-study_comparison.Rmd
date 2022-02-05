@@ -123,7 +123,7 @@ Duplicate taxa listed in table S2:
 
 In all cases, the pupil categorization for the duplicate taxa is the same. Thus, we remove duplicates from the dataset before using it. 
 
-Note also that the methods section of Cervino et al. (2021) says that pupil shape was categorized for 3261 anurans and 20 caudatans (= 3281 species total). However, after importing Table S2 and after removing the 1p duplicate taxa from these supplemental data, we find there are 19 caudatans and 3273 anurans (= 3292 species total). 
+Note also that the methods section of Cervino et al. (2021) says that pupil shape was categorized for 3261 anurans and 20 caudatans (= 3281 species total). However, after importing Table S2 and after removing the 10 duplicate taxa from these supplemental data, we find there are 19 caudatans and 3273 anurans (= 3292 species total). 
 
 ```{r}
 
@@ -357,14 +357,6 @@ Synonyms/duplicated taxa according to ASW  are as follows:
 
 When we merge datasets, duplicate ASW names will be dropped, which is why I have noted them above. 
 
-Now that we've converted taxonomy, we can look at species numbers again (according to ASW).
-
-Yovanovich et al.
-- `r length(levels(as.factor(yovanovich.ASW$genus_species)))` species according to ASW
-
-
-Cervino et al. 
-- `r length(levels(as.factor(cervino.ASW$genus_species)))` species according to ASW
 
 
 # Sampling overlap
