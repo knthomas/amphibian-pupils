@@ -1,7 +1,7 @@
 ---
 title: "Pupil data and phylogeny"
 author: "Katie Thomas"
-date: 31 Jan 2022
+date: 14 Feb 2022
 output:
   html_document:
     keep_md: true
@@ -112,7 +112,7 @@ eyesize_raw <- data.frame(read.csv("../Data/Raw data/Thomas_museum_specimens.csv
 eyesize1 <- eyesize_raw %>%
   mutate(eyemean = rowMeans(eyesize_raw[c('ED_right_mm', 'ED_left_mm')], na.rm=TRUE)) %>% #adds mean of L/R eyes
   mutate(eyemean = na_if(eyemean, "NaN")) %>% #remove missing values
-   select(genus_species, eyemean) #keeps only columns of interest for analyses
+  select(genus_species, eyemean) #keeps only columns of interest for analyses
 
 #find species means
 eyesize <- eyesize1 %>% 
@@ -128,7 +128,7 @@ eyesize <- eyesize1 %>%
 #combine almond and slit categories to one
 pupils <- pupils_full %>%
   #combine almond and slit categories to one
-  mutate(Final_Shape = recode_factor(Final_Shape, "almond" = "almond/slit", "slit" = "almond/slit")) %>%
+  #mutate(Final_Shape = recode_factor(Final_Shape, "almond" = "almond/slit", "slit" = "almond/slit")) %>%
   #change (yes) and (no) ecological states to yes and no
   mutate(aquatic = recode_factor(aquatic, "(no)" = "no", "(yes)" = "yes")) %>%
   mutate(fossorial = recode_factor(fossorial, "(no)" = "no", "No" = "no", "no " = "no")) %>%
@@ -139,7 +139,7 @@ pupils <- pupils_full %>%
 
 #check factor levels for pupil shape/constriction
 levels(as.factor(pupils$Final_Constriction))
-levels(pupils$Final_Shape)
+levels(as.factor(pupils$Final_Shape))
 
 #check factor levels for binary ecology traits
 levels(as.factor(pupils$aquatic))
@@ -149,7 +149,7 @@ levels(as.factor(pupils$diurnal))
 
 # Taxon sampling -----
 
-#Number of speciessampled acros taxa
+#Number of species sampled acros taxa
 counts <-ddply(pupils, .(pupils$Order, pupils$Family), nrow)
 names(counts) <- c("Order", "Family","Species Sampled")
 
@@ -159,17 +159,17 @@ length(levels(as.factor(pupils$Genus)))
 length(levels(as.factor(pupils$Family)))
 
 #frog sampling
-frogs<-pupils %>% filter(Order=="Anura")
+frogs<-pupils %>% filter(Order=="Anura") %>% droplevels()
 length(levels(as.factor(frogs$genus_species)))
 length(levels(as.factor(frogs$Family)))
 
 #caudatan sampling
-caudata<-pupils %>% filter(Order=="Caudata")
+caudata<-pupils %>% filter(Order=="Caudata") %>% droplevels()
 length(levels(as.factor(caudata$genus_species)))
 length(levels(as.factor(caudata$Family)))
 
 #caecilian sampling
-gymno <- pupils %>% filter(Order=="Gymnophiona")
+gymno <- pupils %>% filter(Order=="Gymnophiona") %>% droplevels()
 length(levels(as.factor(gymno$genus_species)))
 length(levels(as.factor(gymno$Family)))
 
