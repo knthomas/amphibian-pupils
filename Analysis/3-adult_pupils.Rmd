@@ -184,12 +184,13 @@ sh_constrict <- c("horizontal" = "H",
                   "vertical" = "V")
                    
 #pupil shape symbols
-sh_shape <- c("almond/slit" = 97,
-              "circle"  = 19, 
-              "diamond" = 23, 
-              "sideways triangle" = 24,
-              "upside down tear" = 6,
-              "upside down triangle" = 25)
+sh_shape <- c("almond" = "oval",
+              "circle"  = "circ.", 
+              "diamond" = "diam.", 
+              "sideways triangle" = "s. tri.",
+              "slit" = "slit",
+              "upside down tear" = "u. tear",
+              "upside down triangle" = "u. tri.")
 
 #aquatic cols
 col_aq <- c("no" = "gray50",
@@ -236,10 +237,10 @@ tiplabels(col = col_constrict[pupil_fams$Final_Constriction], #sets color to pup
           offset = 10) #size of labels
 
 #add tip labels for pupil shape
-tiplabels(col = "black", bg = "black",
-          pch = sh_shape[pupil_fams$Final_Shape], #shape of labels
-          cex = 1.2,
-          offset = 25) #size of labels
+tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
+          text = sh_shape[pupil_fams$Final_Shape], #shape of labels
+          cex = 1,
+          offset = 17) #size of labels
 
 #finish pdf export without legends
 #dev.off()
@@ -251,15 +252,6 @@ legend(x = 0.05, y = 90, legend = c("Horizontally elongated", "Non-elongatedl", 
        cex = 0.7, 
        box.lty = 0, 
        title = "Pupil constriction", 
-       title.adj = 0)
-
-#add legend for pupil shape
-legend(x = 0.05, y = 85, legend = names(sh_shape), 
-       col = "black", pt.bg = "black",
-       pch = sh_shape, #shape of labels
-       cex = 0.7, 
-       box.lty = 0, 
-       title = "Pupil shape", 
        title.adj = 0)
 
 #finish pdf export
@@ -365,10 +357,10 @@ tiplabels(col = col_constrict[pupil.data$Final_Constriction], #sets color to pup
           offset = 5) 
 
 #add tip labels for pupil shape
-tiplabels(col = "black", bg = "black",
-          pch = sh_shape[pupil.data$Final_Shape], #shape of labels
-          cex = 0.9,
-          offset = 15) 
+tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
+          text = sh_shape[pupil.data$Final_Shape], #shape of labels
+          cex = 0.7,
+          offset = 12) 
 
 #add tip labels for aquatic
 tiplabels(col = col_aq[pupil.data$aquatic],
@@ -409,14 +401,6 @@ legend(x = 100, y = 1325, legend = c("Horizontally elongated", "Non-elongated", 
        title = "Adult pupil", 
        title.adj = 0)
 
-#add legend for pupil shape
-legend(x = 200, y = 1325, legend = c("almond or slit", "circle", "diamond", "sideways triangle", "inverted tear", "inverted triangle"), 
-       col = "black", pt.bg = "black",
-       pch = sh_shape, #shape of labels
-       cex = 0.7, 
-       box.lty = 0, 
-       title = "Adult pupil", 
-       title.adj = 0)
 
 #add legend for ecology
 legend(x = 350, y = 1325, legend = c("aquatic", "fossorial", "scansorial", "diurnal", "absent"), 
@@ -433,7 +417,7 @@ legend(x = 450, y = 1325, legend = "non-elongated circle",
        pch = 21, #shape of labels
        cex = 0.7, 
        box.lty = 0, 
-       title = "Tadpole pupil", 
+       title = "Larval pupil", 
        title.adj = 0)
 
 #finish pdf export
@@ -536,8 +520,8 @@ tiplabels(col = col_constrict[pupil.hylid$Final_Constriction], #sets color to pu
           offset = 2) #size of labels
 
 #add tip labels for pupil shape
-tiplabels(col = "black", bg = "black",
-          pch = sh_shape[pupil.hylid$Final_Shape], #shape of labels
+tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
+          text =  sh_shape[pupil.hylid$Final_Shape], #shape of labels
           cex = 0.7,
           offset = 7) #size of labels
 
@@ -592,13 +576,13 @@ plot.phylo(micro.tree,
 tiplabels(col = col_constrict[pupil.micro$Final_Constriction], #sets color to pupil constriction 
           pch = sh_constrict[pupil.micro$Final_Constriction], #shape of labels
           cex = 1,
-          offset = 5) 
+          offset = 3) 
 
 #add tip labels for pupil shape
-tiplabels(col = "black", bg = "black",
-          pch = sh_shape[pupil.micro$Final_Shape], 
+tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
+          text = sh_shape[pupil.micro$Final_Shape], 
           cex = 1,
-          offset = 11) 
+          offset = 7) 
 
 #finish pdf export without legends
 #dev.off()
@@ -644,7 +628,7 @@ plot.phylo(myo.tree,
            no.margin = TRUE, 
            use.edge.length = TRUE, 
            edge.width = 1.5,
-           label.offset = 15) 
+           label.offset = 25) 
 
 #add tip labels for pupil constriction
 tiplabels(col = col_constrict[pupil.myo$Final_Constriction], #sets color to pupil constriction 
@@ -653,8 +637,8 @@ tiplabels(col = col_constrict[pupil.myo$Final_Constriction], #sets color to pupi
           offset = 5) 
 
 #add tip labels for pupil shape
-tiplabels(col = "black", bg = "black",
-          pch = sh_shape[pupil.myo$Final_Shape], 
+tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
+          text =  sh_shape[pupil.myo$Final_Shape], 
           cex = 1.2,
           offset = 11) 
 
@@ -704,7 +688,7 @@ plot.phylo(afro.tree,
            no.margin = TRUE, 
            use.edge.length = TRUE, 
            edge.width = 1.5,
-           label.offset = 15) 
+           label.offset = 25) 
 
 #add tip labels for pupil constriction
 tiplabels(col = col_constrict[pupil.afro$Final_Constriction], #sets color to pupil constriction 
@@ -713,10 +697,10 @@ tiplabels(col = col_constrict[pupil.afro$Final_Constriction], #sets color to pup
           offset = 5) 
 
 #add tip labels for pupil shape
-tiplabels(col = "black", bg = "black",
-          pch = sh_shape[pupil.afro$Final_Shape], 
+tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
+          text = sh_shape[pupil.afro$Final_Shape], 
           cex = 1,
-          offset = 11) 
+          offset = 15) 
 
 #finish pdf export without legends
 #dev.off()
