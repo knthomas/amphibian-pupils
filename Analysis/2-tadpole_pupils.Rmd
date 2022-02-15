@@ -165,12 +165,13 @@ sh_constrict <- c("horizontal" = "H",
                   "vertical" = "V")
                    
 #pupil shape symbols
-sh_shape <- c("almond/slit" = 97,
-              "circle"  = 19, 
-              "diamond" = 23, 
-              "sideways triangle" = 24,
-              "upside down tear" = 6,
-              "upside down triangle" = 25)
+sh_shape <- c("almond" = "oval",
+              "circle"  = "circ.", 
+              "diamond" = "diam.", 
+              "sideways triangle" = "s. tri.",
+              "slit" = "slit",
+              "upside down tear" = "u. tear",
+              "upside down triangle" = "u. tri.")
 
 #aquatic cols
 col_aq <- c("no" = "gray50",
@@ -215,37 +216,37 @@ plot.phylo(tad.tree,
 tiplabels(col = col_constrict[pupils.tads$Final_Constriction], #sets color to pupil constriction 
           pch = sh_constrict[pupils.tads$Final_Constriction], #shape of labels
           cex = 0.8,
-          offset = 5)
+          offset = 3)
 
 #add tip labels for adult pupil shape
-tiplabels(col = "black", bg = "black",
-          pch = sh_shape[pupils.tads$Final_Shape], #shape of labels
-          cex = 0.9,
-          offset = 15)
+tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
+          text = sh_shape[pupils.tads$Final_Shape], #shape of labels
+          cex = 0.7,
+          offset = 8)
 
 #add tip labels for aquatic
 tiplabels(col = col_aq[pupils.tads$aquatic],
           pch = 19, 
           cex = 0.9,
-          offset = 25) 
+          offset = 28) 
 
 #add tip labels for fossorial
 tiplabels(col = col_foss[pupils.tads$fossorial],
           pch = 19, 
           cex = 0.9,
-          offset = 35) 
+          offset = 38) 
 
 #add tip labels for scansorial
 tiplabels(col = col_scans[pupils.tads$arboreal],
           pch = 19, 
           cex = 0.9,
-          offset = 45) 
+          offset = 48) 
 
 #add tip labels for diurnal
 tiplabels(col = col_diur[pupils.tads$diurnal],
           pch = 19, 
           cex = 0.9,
-          offset = 55) 
+          offset = 58) 
 
 #add tip labels for tadpole pupil constriction and shape
 tiplabels(bg = "#FF851B", col = "black",
@@ -260,15 +261,6 @@ legend(x = 0.05, y = 65, legend = c("Horizontally elongated", "Non-elongated", "
        cex = 0.7, 
        box.lty = 0, 
        title = "Adult pupil constriction", 
-       title.adj = 0)
-
-#add legend for pupil shape
-legend(x = 0.05, y = 60, legend = names(sh_shape), 
-       col = "black", pt.bg = "black",
-       pch = sh_shape, #shape of labels
-       cex = 0.7, 
-       box.lty = 0, 
-       title = "Adult pupil shape", 
        title.adj = 0)
 
 #add legend for ecology
@@ -319,34 +311,34 @@ tiplabels(col = col_constrict[pupils.tads_pruned$Final_Constriction], #sets colo
           offset = 5)
 
 #add tip labels for adult pupil shape
-tiplabels(col = "black", bg = "black",
-          pch = sh_shape[pupils.tads_pruned$Final_Shape], #shape of labels
-          cex = 0.9,
-          offset = 15)
+tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
+          text = sh_shape[pupils.tads_pruned$Final_Shape], #shape of labels
+          cex = 0.7,
+          offset = 8)
 
 #add tip labels for aquatic
 tiplabels(col = col_aq[pupils.tads_pruned$aquatic],
           pch = 19, 
           cex = 0.9,
-          offset = 25) 
+          offset = 28) 
 
 #add tip labels for fossorial
 tiplabels(col = col_foss[pupils.tads_pruned$fossorial],
           pch = 19, 
           cex = 0.9,
-          offset = 35) 
+          offset = 38) 
 
 #add tip labels for scansorial
 tiplabels(col = col_scans[pupils.tads_pruned$arboreal],
           pch = 19, 
           cex = 0.9,
-          offset = 45) 
+          offset = 48) 
 
 #add tip labels for diurnal
 tiplabels(col = col_diur[pupils.tads_pruned$diurnal],
           pch = 19, 
           cex = 0.9,
-          offset = 55) 
+          offset = 58) 
 
 #add tip labels for tadpole pupil constriction and shape
 tiplabels(bg = "#FF851B", col = "black",
@@ -361,15 +353,6 @@ legend(x = 0.05, y = 65, legend = c("horizontally elongaged", "non-elongated", "
        cex = 0.7, 
        box.lty = 0, 
        title = "Adult pupil constriction", 
-       title.adj = 0)
-
-#add legend for pupil shape
-legend(x = 0.05, y = 60, legend = names(sh_shape), 
-       col = "black", pt.bg = "black",
-       pch = sh_shape, #shape of labels
-       cex = 0.7, 
-       box.lty = 0, 
-       title = "Adult pupil shape", 
        title.adj = 0)
 
 #add legend for ecology
