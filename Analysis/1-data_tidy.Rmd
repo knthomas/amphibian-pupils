@@ -1,7 +1,7 @@
 ---
 title: "Pupil data and phylogeny"
 author: "Katie Thomas"
-date: 14 Feb 2022
+date: 19 Feb 2022
 output:
   html_document:
     keep_md: true
@@ -127,8 +127,6 @@ eyesize <- eyesize1 %>%
 
 #combine almond and slit categories to one
 pupils <- pupils_full %>%
-  #combine almond and slit categories to one
-  #mutate(Final_Shape = recode_factor(Final_Shape, "almond" = "almond/slit", "slit" = "almond/slit")) %>%
   #change (yes) and (no) ecological states to yes and no
   mutate(aquatic = recode_factor(aquatic, "(no)" = "no", "(yes)" = "yes")) %>%
   mutate(fossorial = recode_factor(fossorial, "(no)" = "no", "No" = "no", "no " = "no")) %>%
@@ -226,7 +224,7 @@ is.ultrametric(tree_orig)
 plot.phylo(tree_orig, show.tip.label = F)
 
 ```
-Next we must match up the species names in the tree to the species names in our dataset. Unfortunately, anuran taxonomy changes frequently and there are likely many species matches that are named differently in the tree and in our dataset. To match them up, we use the AmphiNom package by Liedtke (2019) to convert known synonyms to the taxonomy represented in Amphibian Speicies of the World (ASW). This addresses the bulk of missing taxa; the remaining need to be examined manually to match to the tree. 
+Next we must match up the species names in the tree to the species names in our dataset. Unfortunately, anuran taxonomy changes frequently and there are likely many species matches that are named differently in the tree and in our dataset. To match them up, we use the AmphiNom package by Liedtke (2019) to convert known synonyms to the taxonomy represented in Amphibian Species of the World (ASW). This addresses the bulk of missing taxa; the remaining need to be examined manually to match to the tree. 
 
 ```{r name-match, fig.height=20, fig.width=20, results = "hide"}
 
@@ -639,7 +637,7 @@ is.ultrametric(tree.pruned)
 write.nexus(tree.pruned, file = "../Outputs/poly_tree.nex")
 
 #plot pruned tree with polytomies
-plot.phylo(tree.pruned, type="fan")
+plot.phylo(tree.pruned, type="fan", show.tip.label = FALSE)
 
 #export plot of tree
 pdf("../Outputs/poly_tree.pdf", width = 25, height = 25)
@@ -665,9 +663,6 @@ is.ultrametric(tree.pruned)
 
 #randomly resolve polytomies with multi2di
 tree.pruned2 <- multi2di(tree.pruned, random = TRUE)
-
-#randomly resolve polytomies with PDcalc package
-#tree.pruned2 <- PDcalc::bifurcatr(tree.pruned, runs = 1)
 
 #confirm that tree is now dichotomous
 is.binary(tree.pruned2)
@@ -810,9 +805,11 @@ eyesize_names$ASW_names[eyesize_names$genus_species=="Phlyctimantis _verrucosus"
 eyesize_names$ASW_names[eyesize_names$genus_species=="Stumpffia_?grandis"]<-"Stumpffia_grandis"
 eyesize_names$ASW_names[eyesize_names$genus_species=="Ptychadena_mascareniensis"]<-"Ptychadena_mascareniensis"
 
+#rename genus species column from eye size data
+eyesize_names <- rename(eyesize_names, eyesize_name = genus_species)
+
 #find species in eye size dataset that aren't matching with adult pupil dataset
 eyesize_names$ASW_names[!eyesize_names$ASW_names %in% pupils.phy$ASW_names]
-
 
 #merge with pupil dataset
 pupils.phy.eye <- left_join(pupils.phy, eyesize_names, by = "ASW_names")
@@ -824,13 +821,10 @@ pupils.phy.eye <- left_join(pupils.phy, eyesize_names, by = "ASW_names")
 ```{r}
 #select final pupil data
 pupil.final <- pupils.phy.eye %>%
-  select(-one_of(c("species_phylo", "species_phylo2")))
+  select(ASW_names, Order, Family, Genus, Species, Final_Constriction, Final_Shape, Source, Pupil_link, Pupil_link_2, Tadpole_constriction, Tadpole_shape, Tadpole_source, Tad_pupil_link, Tad_pupil_link2, aquatic, fossorial, arboreal, diurnal, references, eye_av)
 
 #export tidied final dataset
-#write.csv(pupil.final, file = "../Cleaned data/pupil_data_cleaned.csv", row.names = FALSE)
-
-#export data with refs for supp
-write.csv(pupil.final, file = "../Data/Cleaned data/pupil_data_refs.csv", row.names = FALSE)
+write.csv(pupil.final, file = "../Data/Cleaned data/pupil_data_cleaned.csv", row.names = FALSE)
 
 #export final phylogeny
 write.nexus(pupil.tree, file = "../Data/Cleaned data/pupil_tree_cleaned")
