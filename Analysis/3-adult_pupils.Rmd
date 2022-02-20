@@ -1,7 +1,7 @@
 ---
 title: "Adult pupil diversity"
 author: "Katie Thomas"
-date: 31 January 2022
+date: 19 Feb 2022
 output:
   html_document:
     keep_md: true
@@ -260,7 +260,7 @@ legend(x = 0.05, y = 90, legend = c("Horizontally elongated", "Non-elongatedl", 
 
 ## One species representing each family
 
-Here I will extract one representative species for each family, and prune the phylogeny based on these taxa. This will allow us to manually make a figure showing the diversity of pupil shapes and constriction found within each family (as well as add sample sizes potentially). 
+Here I will extract one representative species for each family, and prune the phylogeny based on these taxa. This will allow us to manually make a figure showing the diversity of pupil shapes and constriction found within each family. 
 
 ```{r}
 
@@ -277,7 +277,7 @@ pupil_fams2 <- pupil.data %>%
 pupil_fams2$Family <- as.character(pupil_fams2$Family)
 ```
 
-We have 73 species, each representing one family sampled. Now we prune the tree to match. 
+We have 74 species, each representing one family sampled. Now we prune the tree to match. 
 
 ```{r}
 
@@ -437,7 +437,7 @@ Here are all species coded for adult pupil constriction on a fan tree, with spec
 
 # Adult pupil constriction direction: all species
 
-pdf("../Outputs/Figures/adult_constriciton_fan.pdf", width = 15, height = 15)
+#pdf("../Outputs/Figures/adult_constriciton_fan.pdf", width = 15, height = 15)
 
 #plot phylogeny
 plot.phylo(pupil.tree, 
@@ -458,8 +458,7 @@ legend(x = 0.05, y = 100, legend = c("Horizontaly elongated", "Non-elongated", "
        title = "Pupil constriction", 
        title.adj = 0)
 
-#finish pdf export without legends
-dev.off()
+#dev.off()
 
 ```
 
@@ -498,13 +497,13 @@ name.check(hylid.tree, pupil.hylid)
 pupil.hylid <- pupil.hylid[hylid.tree$tip.label,]
 ```
 
-```{r, fig.height = 15, fig.width = 15, fig.cap = "Hylidae"}
+```{r, fig.height = 35, fig.width = 5, fig.cap = "Hylidae"}
 #export as pdf: fan with tip labels ---------
 #pdf("../Outputs/Figures/hylidae.pdf", width = 16, height = 16)
 
 #plot phylogeny
 plot.phylo(hylid.tree, 
-           type = "fan", 
+           type = "phylogram", 
            show.tip.label = TRUE, 
            cex = 0.6, #text size
            no.margin = TRUE, 
@@ -514,8 +513,7 @@ plot.phylo(hylid.tree,
 
 #add tip labels for pupil constriction
 tiplabels(col = col_constrict[pupil.hylid$Final_Constriction], #sets color to pupil constriction 
-          #pch = sh_constrict[pupil.hylid$Final_Constriction], #shape of labels
-          pch = 19,
+          pch = sh_constrict[pupil.hylid$Final_Constriction], #shape of labels
           cex = 0.7,
           offset = 2) #size of labels
 
@@ -523,9 +521,9 @@ tiplabels(col = col_constrict[pupil.hylid$Final_Constriction], #sets color to pu
 tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
           text =  sh_shape[pupil.hylid$Final_Shape], #shape of labels
           cex = 0.7,
-          offset = 7) #size of labels
+          offset = 4) #size of labels
 
-#finish pdf export without legends
+#finish pdf export
 #dev.off()
 ```
 
@@ -590,13 +588,13 @@ tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
 
 ### Myobatrachidae deep dive
 
-Myobatrachidae deep dive (all species sampled; n = 42)
+Here we sampled species in the Myobatrachoidea superfamily (families Myobatrachidae + Limnodynastidae, n = 46 species)
 
 ```{r phylo-myob, results = "hide"}
 
 #summarize data by family, constriction direction, and pupil shape
 pupil.myo <- pupil.data %>%
-  filter(Family == "Myobatrachidae") 
+  filter(Family %in% c("Myobatrachidae", "Limnodynastidae")) 
 
 # Prune tree to match data subset
 
@@ -676,40 +674,39 @@ name.check(afro.tree, pupil.afro)
 pupil.afro <- pupil.afro[afro.tree$tip.label, ]
 ```
 
-```{r, fig.height = 13.5, fig.width = 13, fig.cap = "Afrobatrachia (Arthroleptidae + Hyperoliidae + Hemisotidae + Brevicepitidae"}
+```{r, fig.height = 19, fig.width = 5, fig.cap = "Afrobatrachia (Arthroleptidae + Hyperoliidae + Hemisotidae + Brevicepitidae"}
 #export as pdf: fan with tip labels ---------
 #pdf("../Outputs/Figures/afrobatrachia.pdf", width = 13.5, height = 13)
 
 #plot phylogeny
 plot.phylo(afro.tree, 
-           type = "fan", 
+           type = "phylogram", 
            show.tip.label = TRUE, 
-           cex = 0.8, #text size
+           cex = 0.6, #text size
            no.margin = TRUE, 
            use.edge.length = TRUE, 
            edge.width = 1.5,
-           label.offset = 25) 
+           label.offset = 12) 
 
 #add tip labels for pupil constriction
 tiplabels(col = col_constrict[pupil.afro$Final_Constriction], #sets color to pupil constriction 
           pch = sh_constrict[pupil.afro$Final_Constriction], #shape of labels
-          cex = 1,
-          offset = 5) 
+          cex = 0.7,
+          offset = 2) 
 
 #add tip labels for pupil shape
 tiplabels(col = "black", bg = "white", frame = "none", adj = 0,
           text = sh_shape[pupil.afro$Final_Shape], 
-          cex = 1,
-          offset = 15) 
+          cex = 0.6,
+          offset = 4) 
 
 #finish pdf export without legends
 #dev.off()
 ```
 
+# Analyses: Evolution of pupil shape elongate
 
-# Analyses: Evolution of pupil constriction
-
-Here, we use Mk models and extended Mk models of discrete character evolution to examine how pupil constriction axis evolves across amphibians. We compare models with 1) equal transition rates, 2) symmetrical transition rates, and 3) all different transition rates across pupil constriction states (vertical, symmetrical, horizontal) among all species sampled (n = 1293).
+Here, we use Mk models and extended Mk models of discrete character evolution to examine how pupil constriction axis evolves across amphibians. We compare models with 1) equal transition rates, 2) symmetrical transition rates, and 3) all different transition rates across pupil constriction states (vertical, nonelongated, horizontal) among all species sampled (n = 1293).
 
 ## Compare discrete models of pupil constriction
 
