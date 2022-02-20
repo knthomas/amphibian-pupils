@@ -1,7 +1,7 @@
 ---
 title: "Tadpole pupil diversity"
 author: "Katie Thomas"
-date: 31 January 2022
+date: 19 Feb 2022
 output:
   html_document:
     keep_md: true
@@ -100,8 +100,6 @@ Finally, as we have some repeat sampling within family, we are going to prune th
 
 ```{r}
 
-
-
 #Prune tad data to drop some unnecessary species to show phylogenetic diversity
 
 #create vector of species to drop
@@ -139,6 +137,12 @@ name.check(tad.tree_pruned, pupils.tads_pruned)
 
 #reorder data to match tip labels
 pupils.tads_pruned <- pupils.tads_pruned[tad.tree_pruned$tip.label,]
+
+#look at all the combinations of constriction and shapes in the adults from our tadpole subset
+tad.states <- pupils.tads_pruned %>%
+  group_by(Final_Constriction, Final_Shape) %>%
+  dplyr::summarise(n_species = n()) %>%
+  filter_at(vars(Final_Constriction, Final_Shape), any_vars(!is.na(.))) #omit species missing both tadpole pupil
 ```
 
 ## Summary
